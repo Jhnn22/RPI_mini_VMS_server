@@ -11,8 +11,8 @@ int main(int argc, char *argv[])
     MainWidget w;
     w.show();
 
-    GstThread gstThread(w.winId());
-    gstThread.start();
+    // GstThread gstThread(w.winId());
+    // gstThread.start();
 
     return a.exec();
 }

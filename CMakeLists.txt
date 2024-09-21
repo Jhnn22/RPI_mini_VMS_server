@@ -33,11 +33,13 @@ include_directories(
 set(PROJECT_HEADERS
         include/mainwidget.h
         include/gstthread.h
+        include/displaywidget.h
 )
 
 set(PROJECT_SOURCES
         source/mainwidget.cpp
         source/gstthread.cpp
+        source/displaywidget.cpp
 )
 
 set(PROJECT_UI
@@ -51,9 +53,6 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         ${PROJECT_HEADERS}
         ${PROJECT_SOURCES}
         ${PROJECT_UI}
-        .github/PULL_REQUEST_TEMPLATE.md
-        .github/ISSUE_TEMPLATE/bug_report.md
-        .github/ISSUE_TEMPLATE/feature_request.md
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET RPI_mini_VMS_server APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
