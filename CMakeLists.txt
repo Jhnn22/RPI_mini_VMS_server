@@ -12,11 +12,24 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
 
+# GStreamer package
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(GSTREAMER REQUIRED
+    gstreamer-1.0
+    gstreamer-video-1.0
+)
+
+# GStreamer 라이브러리 및 포함 경로 설정
+include_directories(${GSTREAMER_INCLUDE_DIRS})
+link_directories(${GSTREAMER_LIBRARY_DIRS})
+
 set(PROJECT_SOURCES
         main.cpp
         mainwidget.cpp
         mainwidget.h
         mainwidget.ui
+        gstthread.cpp
+        gstthread.h
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
@@ -42,7 +55,10 @@ else()
     endif()
 endif()
 
-target_link_libraries(RPI_mini_VMS_server PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+target_link_libraries(RPI_mini_VMS_server PRIVATE
+    Qt${QT_VERSION_MAJOR}::Widgets
+    ${GSTREAMER_LIBRARIES}
+)
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an
