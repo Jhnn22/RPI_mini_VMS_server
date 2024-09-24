@@ -11,9 +11,6 @@ class MainWidget;
 }
 QT_END_NAMESPACE
 
-#define PORT                5123
-#define MAX_DISPLAY_COUNT   9
-
 class MainWidget : public QWidget
 {
     Q_OBJECT

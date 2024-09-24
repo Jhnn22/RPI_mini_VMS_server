@@ -101,7 +101,7 @@
 }</string>
         </property>
         <property name="inputMask">
-         <string>000.000.000.000</string>
+         <string/>
         </property>
        </widget>
       </item>

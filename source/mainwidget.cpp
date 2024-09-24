@@ -1,7 +1,6 @@
 #include "mainwidget.h"
 #include "ui_mainwidget.h"
 #include "displaywidget.h"
-#include "gstthread.h"
 
 MainWidget::MainWidget(QWidget *parent)
     : QWidget(parent)
@@ -25,13 +24,22 @@ MainWidget::MainWidget(QWidget *parent)
         ui->stackedWidget->setCurrentIndex(0);
     });
 
-    for (auto key : displays.keys()) {
-        GstThread* gstThread = new GstThread(key->winId());
-        gstThread->start();
-    }
+    connect(ui->change_pushButton, &QPushButton::clicked, this, [=]() {
+        // TODO : url 체크
+        QString url = ui->ip_lineEdit->text();
+        if (url != "" && focusedDisplay) {
+            qDebug() << "start video" << focusedDisplay->objectName() << url;
+            focusedDisplay->playVideo(url);
+        }
+    });
+
+    connect(ui->delete_pushButton, &QPushButton::clicked, this, [=]() {
+        focusedDisplay->stopVideo();
+    });
 }
 
 void MainWidget::makePage1() {
+    /* 아홉게로 구성된 화면을 보여주는 페이지1 */
     page1 = new QWidget();
 
     QGridLayout* gridLayout = new QGridLayout();
@@ -56,6 +64,7 @@ void MainWidget::makePage1() {
 }
 
 void MainWidget::makePage2() {
+    /* 집중하고 싶은 화면을 보여주는 페이지2 */
     page2 = new QWidget();
     page2->setLayout(new QHBoxLayout());
     ui->stackedWidget->addWidget(page2);
@@ -63,5 +72,7 @@ void MainWidget::makePage2() {
 
 MainWidget::~MainWidget()
 {
+    delete page1;
+    delete page2;
     delete ui;
 }
