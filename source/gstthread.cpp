@@ -6,26 +6,13 @@
 
 using namespace std;
 
-GstThread::GstThread(WId windowId, QString rtspURI) : m_windowId(windowId), m_rtspURI(rtspURI) {
-}
-
-
-static void on_pad_added(GstElement *element, GstPad *pad, gpointer data) {
-    GstPad *sinkpad;
-    GstElement *depay = (GstElement *)data;
-
-    sinkpad = gst_element_get_static_pad(depay, "sink");
-
-    if (!gst_pad_is_linked(sinkpad)) {
-        if (gst_pad_link(pad, sinkpad) != GST_PAD_LINK_OK) {
-            g_printerr("Failed to link pads!\n");
-        }
-    }
-
-    gst_object_unref(sinkpad);
-}
-
 static void pad_added_handler(GstElement *src, GstPad *new_pad, GstElement *depay) {
+    /*
+     * 동적 패드 연결을 위한 핸들러
+     * rtsp로 받는 source는 여상 데이터일 수도 있고, 음성 데이터일 수도 있기 때문에
+     * 동적으로 패드를 연결해야 함.
+     */
+
     GstPad *sink_pad = gst_element_get_static_pad(depay, "sink");
     if (gst_pad_is_linked(sink_pad)) {
         g_object_unref(sink_pad);
@@ -51,20 +38,21 @@ static void pad_added_handler(GstElement *src, GstPad *new_pad, GstElement *depa
     g_object_unref(sink_pad);
 }
 
+GstThread::GstThread(WId windowId, QString rtspURL) : windowId(windowId), rtspURL(rtspURL) {
+    stopped = false;
+}
+
+void GstThread::stop() {
+    stopped = true;
+}
+
 void GstThread::run() {
-    gst_debug_set_default_threshold(GST_LEVEL_WARNING);
+    // gst 디버그 범위 설정 코드
+    // gst_debug_set_default_threshold(GST_LEVEL_WARNING);
     GstElement *pipeline, *source, *depay, *parse, *decode, *convert, *sink;
     GstBus *bus;
     GstMessage *msg;
-
-    // // GStreamer 파이프라인을 RTSP 스트림에 맞게 설정
-    // string pipelineStr = "rtspsrc location=rtsp://192.168.0.16:8554/test ! rtph264depay ! h264parse ! openh264dec ! videoconvert ! glimagesink";
-    // pipeline = gst_parse_launch(pipelineStr.c_str(), NULL);
-
-
-    // GstElement* videoSink = gst_bin_get_by_interface(GST_BIN(pipeline), GST_TYPE_VIDEO_OVERLAY);
-    // // QWidget에 비디오를 렌더링하기 위한 핸들 설정
-    // gst_video_overlay_set_window_handle(GST_VIDEO_OVERLAY(videoSink), m_windowId);
+    GMainLoop *main_loop;
 
     // 파이프라인 생성
     pipeline = gst_pipeline_new("rtsp-player");
@@ -107,17 +95,13 @@ void GstThread::run() {
     // 파이프라인에 요소 추가
     gst_bin_add_many(GST_BIN(pipeline), source, depay, parse, decode, convert, sink, nullptr);
 
+    // source와 depay 연결 간 동적 패드 처리
     // pad-added signal 처리
     g_signal_connect(source, "pad-added", G_CALLBACK(pad_added_handler), depay);
 
     // RTSP 소스 속성 설정
-    string rtsp_location = "rtsp://"+ m_rtspURI.toStdString() +":8554/test";
-    qDebug() << m_rtspURI;
+    string rtsp_location = "rtsp://"+ rtspURL.toStdString() +":8554/test";
     g_object_set(G_OBJECT(source), "location", rtsp_location.c_str(), nullptr);
-
-    // // rtspsrc의 특정 패드를 사용하도록 설정
-    // g_object_set(G_OBJECT(source), "latency", 0, nullptr);
-    // g_object_set(G_OBJECT(source), "protocols", 4, nullptr); // TCP를 사용하도록 설정
 
     // 요소 연결
     if (!gst_element_link_many(depay, parse, decode, convert, sink, nullptr)) {
@@ -126,26 +110,17 @@ void GstThread::run() {
         return;
     }
 
-    // // rtspsrc와 rtph264depay를 연결
-    // g_object_set(G_OBJECT(source), "drop-on-latency", TRUE, nullptr);
-    // g_object_set(G_OBJECT(source), "do-rtsp-keep-alive", TRUE, nullptr);
-    // g_object_set(G_OBJECT(source), "do-rtcp", TRUE, nullptr);
+    // video를 QWidget에 overlay
+    gst_video_overlay_set_window_handle(GST_VIDEO_OVERLAY(sink), windowId);
 
-    // source의 'pad-added' 시그널에 콜백 연결 (동적 패드 처리)
-    // g_signal_connect(source, "pad-added", G_CALLBACK(on_pad_added), depay);
-
-    gst_video_overlay_set_window_handle(GST_VIDEO_OVERLAY(sink), m_windowId);
-
-    // --------------------------------------------------------------------
     // 파이프라인을 재생 상태로 설정
     gst_element_set_state(pipeline, GST_STATE_PLAYING);
 
     // 버스를 통해 메시지 대기
     bus = gst_element_get_bus(pipeline);
-    do {
-        msg = gst_bus_timed_pop_filtered(bus, GST_CLOCK_TIME_NONE,
+    while (!stopped){
+        msg = gst_bus_timed_pop_filtered(bus, 100*GST_MSECOND,
                 (GstMessageType)(GST_MESSAGE_STATE_CHANGED | GST_MESSAGE_ERROR | GST_MESSAGE_EOS));
-
         if (msg != NULL) {
             GError *err;
             gchar *debug_info;
@@ -157,12 +132,13 @@ void GstThread::run() {
                 qDebug() << "Debugging information: " << (debug_info ? debug_info : "none");
                 g_clear_error(&err);
                 g_free(debug_info);
+                stop();
                 break;
             case GST_MESSAGE_EOS:
                 qDebug()<< "End-Of-Stream reached.";
+                stop();
                 break;
             case GST_MESSAGE_STATE_CHANGED:
-                // 파이프라인의 상태 변경만 관심 있음
                 if (GST_MESSAGE_SRC(msg) == GST_OBJECT(pipeline)) {
                     GstState old_state, new_state, pending_state;
                     gst_message_parse_state_changed(msg, &old_state, &new_state, &pending_state);
@@ -175,7 +151,7 @@ void GstThread::run() {
             }
             gst_message_unref(msg);
         }
-    } while(msg != NULL);
+    }
     // 파이프라인 정지 및 리소스 해제
     gst_element_set_state(pipeline, GST_STATE_NULL);
     gst_object_unref(pipeline);
