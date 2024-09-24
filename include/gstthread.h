@@ -8,13 +8,14 @@ class GstThread : public QThread
 {
     Q_OBJECT
 public:
-    GstThread(WId windowId);
+    GstThread(WId windowId, QString rtspURI);
 
 protected:
     void run() override;
 
 private:
     WId m_windowId;
+    QString m_rtspURI;
 };
 
 #endif // GSTTHREAD_H

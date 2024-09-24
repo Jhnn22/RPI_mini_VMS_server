@@ -1,18 +1,15 @@
 #include "mainwidget.h"
-#include "gstthread.h"
 #include <QApplication>
 
 #include <gst/gst.h>
+#include <gst/video/videooverlay.h>
 
 int main(int argc, char *argv[])
 {
-    QApplication a(argc, argv);
     gst_init(&argc, &argv);
+    QApplication a(argc, argv);
     MainWidget w;
     w.show();
-
-    // GstThread gstThread(w.winId());
-    // gstThread.start();
 
     return a.exec();
 }

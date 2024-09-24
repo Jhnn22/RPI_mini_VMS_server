@@ -53,6 +53,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         ${PROJECT_HEADERS}
         ${PROJECT_SOURCES}
         ${PROJECT_UI}
+        data.qrc
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET RPI_mini_VMS_server APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR

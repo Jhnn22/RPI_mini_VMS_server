@@ -25,10 +25,11 @@ MainWidget::MainWidget(QWidget *parent)
         ui->stackedWidget->setCurrentIndex(0);
     });
 
-    for (auto key : displays.keys()) {
-        GstThread* gstThread = new GstThread(key->winId());
+    connect(ui->change_pushButton, &QPushButton::clicked, this, [=]() {
+        qDebug() << "start video" << focusedDisplay->objectName() << ui->ip_lineEdit->text();
+        GstThread* gstThread = new GstThread(focusedDisplay->winId(), ui->ip_lineEdit->text());
         gstThread->start();
-    }
+    });
 }
 
 void MainWidget::makePage1() {
