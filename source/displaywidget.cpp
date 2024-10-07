@@ -1,5 +1,4 @@
 #include "displaywidget.h"
-
 #include <QBoxLayout>
 DisplayWidget::DisplayWidget(QWidget *parent) : QWidget(parent), m_hasFocus(false) {
     thread = NULL;
@@ -35,20 +34,6 @@ void DisplayWidget::initWindow() {
 
     layout->addWidget(window);
     setLayout(layout);
-
-    // window = new QWidget(this);
-    // window->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    // QLabel* image = new QLabel(window);
-    // image->setScaledContents(true);
-    // image->setPixmap(QPixmap(":/image/standby_screen.png"));
-    // image->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
-    // layout->addWidget(window);
-    // QVBoxLayout* windowLayout = new QVBoxLayout(window);
-    // windowLayout->setContentsMargins(0, 0, 0, 0);  // window 내부 레이아웃의 margin을 0으로 설정
-    // windowLayout->setSpacing(0);  // window 내부 레이아웃의 spacing을 0으로 설정
-    // windowLayout->addWidget(image);
-    // layout->addWidget(window);
-    // setLayout(layout);
 }
 
 void DisplayWidget::paintEvent(QPaintEvent *event)
