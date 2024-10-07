@@ -26,11 +26,12 @@ MainWidget::MainWidget(QWidget *parent)
 
     connect(ui->change_pushButton, &QPushButton::clicked, this, [=]() {
         // TODO : url 체크
-        QString url = ui->ip_lineEdit->text();
-        if (url != "" && focusedDisplay) {
-            qDebug() << "start video" << focusedDisplay->objectName() << url;
-            focusedDisplay->playVideo(url);
-        }
+        // 만약 focus된 화면이면 안바뀌게 - 저장할 수 없으니까
+        // QString url = ui->ip_lineEdit->text();
+        // if (url != "" && focusedDisplay) {
+        //     qDebug() << "start video" << focusedDisplay->objectName() << url;
+        //     focusedDisplay->playVideo(url);
+        // }
     });
 
     connect(ui->delete_pushButton, &QPushButton::clicked, this, [=]() {
