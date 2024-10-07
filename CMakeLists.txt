@@ -34,6 +34,7 @@ set(PROJECT_HEADERS
         include/mainwidget.h
         include/gstthread.h
         include/displaywidget.h
+        include/httplib.h
 )
 
 set(PROJECT_SOURCES
