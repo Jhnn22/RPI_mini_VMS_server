@@ -5,6 +5,7 @@
 #include "deviceregisterdialog.h"
 
 #include <QMessageBox>
+#include <QListWidgetItem>
 
 MainWidget::MainWidget(QWidget *parent)
     : QWidget(parent)
@@ -15,6 +16,8 @@ MainWidget::MainWidget(QWidget *parent)
     makePage2();
 
     ui->stackedWidget->setCurrentIndex(0);
+
+    initDeviceList();
 
     connect(ui->zoom_in_pushButton, &QPushButton::clicked, this, [&](){
         page2->layout()->addWidget(focusedDisplay);
@@ -52,14 +55,23 @@ MainWidget::MainWidget(QWidget *parent)
     });
 
     connect(ui->removeDeviceButton, &QPushButton::clicked, this, [=]() {
-        if (focusedDeviceName == "") return;
-        QMessageBox::StandardButton reply = QMessageBox::question(this,
-            "삭제 확인",
-            focusedDeviceName+tr("를 삭제합니다."),
-            QMessageBox::Yes | QMessageBox::No);
+        QListWidgetItem* selectedItem = ui->listWidget->currentItem();
+        if (selectedItem) {
+            QMessageBox::StandardButton reply = QMessageBox::question(this,
+                "삭제 확인",
+                selectedItem->text() + tr("를 삭제합니다."),
+                QMessageBox::Yes | QMessageBox::No);
 
-        if (reply == QMessageBox::Yes) {
-            deviceManager->removeDevice(focusedDeviceName);
+            if (reply == QMessageBox::Yes) {
+                // 장치 관리자에서 제거
+                deviceManager->removeDevice(selectedItem->text());
+
+                // 리스트 위젯에서 제거
+                int row = ui->listWidget->row(selectedItem);
+                ui->listWidget->takeItem(row);
+                delete selectedItem;
+                focusedDeviceName = "";
+            }
         }
     });
 
@@ -98,27 +110,46 @@ void MainWidget::makePage2() {
 }
 
 void MainWidget::initDeviceList() {
+    focusedDeviceName = "";
     deviceManager = new DeviceManager();
     // deviceManager->load();
+    // -----------------------test --------------
+    Device* d1 = new Device(tr("192.168.0.16"));
+    Device* d2 = new Device(tr("192.168.0.3"));
+    Device* d3 = new Device(tr("192.168.0.4"));
+    d1->setName("test1");
+    d2->setName("test2");
+    d3->setName("test3");
+    deviceManager->addDevice(d1);
+    deviceManager->addDevice(d2);
+    deviceManager->addDevice(d3);
+    //------------------------------------------
+
     QList<QString> names = this->deviceManager->getAllName();
     QList<int> status = this->deviceManager->getAllStatus();
     for (int i = 0; i < names.size(); i++) {
-        QLabel* label = new QLabel(ui->deviceListWidget);
-        label->setText(names[i]);
+        qDebug() << names[i];
+        QListWidgetItem* item = new QListWidgetItem(names[i], ui->listWidget);
         switch (status[i]) {
-        case -1:
-            label->setStyleSheet("QLabel { color : gray }");
+        case DISCONNECTED:
+            item->setForeground(QBrush(Qt::gray));
             break;
-        case 0:
-            label->setStyleSheet("QLabel { color : red }");
+        case CAMERA_OFF:
+            item->setForeground(QBrush(Qt::red));
             break;
-        case 1:
-            label->setStyleSheet("QLabel { color : green }");
+        case CAMERA_ON:
+            item->setForeground(QBrush(Qt::green));
             break;
         default:
             break;
         }
+        item->setTextAlignment(Qt::AlignCenter);
     }
+
+    connect(ui->listWidget, &QListWidget::itemClicked, this, [=](QListWidgetItem* item) {
+        focusedDeviceName = item->text();
+        qDebug() << "Focused device :" << focusedDeviceName;
+    });
 }
 
 MainWidget::~MainWidget()

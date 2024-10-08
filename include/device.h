@@ -26,6 +26,9 @@ public:
     void turnOff();
     void setAddress(QString address);
     QString getName();
+
+    // 테스트용
+    void setName(QString name);
 };
 
 #endif // DEVICE_H

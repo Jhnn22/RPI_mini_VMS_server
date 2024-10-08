@@ -85,3 +85,8 @@ void Device::setAddress(QString address) {
 QString Device::getName() {
     return this->name;
 }
+
+// test 용
+void Device::setName(QString name) {
+    this->name = name;
+}
