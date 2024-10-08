@@ -2,20 +2,26 @@
 #include <glib.h>
 #include <gst/gst.h>
 #include <gst/video/videooverlay.h>
-#include <opencv2/highgui.hpp>
+#include <opencv2/opencv.hpp>
+#define WIDTH 640
+#define HEIGHT 480
 using namespace std;
+using namespace cv;
 
 typedef struct _CustomData{
-    GstElement *pipeline, *source, *depay, *tee;
-    GstElement *video_queue, *parse, *decode, *convert, *video_sink;
+    GstElement *pipeline, *source, *depay, *parse, *decode, *convert, *tee;
+    GstElement *video_queue, *video_sink;
     GstElement *app_queue, *app_sink;
+    VideoWriter videoWriter;
+    Mat before, after;
+    bool size_initialized = false, writer_initialized = false;
 
 } CustomData;
 
 static void pad_added_handler(GstElement *src, GstPad *new_pad, GstElement *depay) {
     /*
      * 동적 패드 연결을 위한 핸들러
-     * rtsp로 받는 source는 여상 데이터일 수도 있고, 음성 데이터일 수도 있기 때문에
+     * rtsp로 받는 source는 영상 데이터일 수도 있고, 음성 데이터일 수도 있기 때문에
      * 동적으로 패드를 연결해야 함.
      */
 
@@ -46,11 +52,48 @@ static void pad_added_handler(GstElement *src, GstPad *new_pad, GstElement *depa
 
 static GstFlowReturn new_sample (GstElement *sink, CustomData *data) {
     GstSample *sample;
+    GstBuffer *buffer;
+    GstMapInfo map;
 
     g_signal_emit_by_name (sink, "pull-sample", &sample);
     if (sample) {
-        /* The only thing we do in this example is print a * to indicate a received buffer */
-        g_print ("*");
+        buffer = gst_sample_get_buffer(sample);
+        // 처음 한 번만 해상도 초기화
+        if (!data->size_initialized) {
+            const String filename = "./recorded_video.mp4";
+            int fourcc = VideoWriter::fourcc('m', 'p', '4', 'v');
+            double fps = 24.0;
+            data->videoWriter.open(filename, fourcc, fps, Size(WIDTH, HEIGHT));
+            if (!data->videoWriter.isOpened()) {
+                g_printerr("Could not open the output video file for write\n");
+                return GST_FLOW_ERROR;
+            }
+            data->size_initialized = true;
+            data->writer_initialized = true;
+        }
+        // GstBuffer를 읽기 위해 맵핑
+        if (gst_buffer_map(buffer, &map, GST_MAP_READ)) {
+            // GStreamer 데이터를 OpenCV cv::Mat로 변환
+            data->before = Mat(Size(WIDTH, HEIGHT), CV_8UC1, map.data);
+            if (data->before.size() != Size(WIDTH, HEIGHT)) {
+                g_printerr("Input image size does not match expected size.\n");
+                return GST_FLOW_ERROR;
+            }
+            cvtColor(data->before, data->after, COLOR_GRAY2BGR);
+            if (data->after.empty()) {
+                g_printerr("Converted image is empty.\n");
+                return GST_FLOW_ERROR;
+            }
+
+            // 프레임 저장
+            if (data->writer_initialized) {
+                data->videoWriter.write(data->after);
+                // imshow("test", data->after); waitKey(1000/24);
+            }
+            // 버퍼 언맵
+            gst_buffer_unmap(buffer, &map);
+        }
+
         gst_sample_unref (sample);
         return GST_FLOW_OK;
     }
@@ -80,12 +123,12 @@ void GstThread::run() {
     // 요소 생성
     data.source = gst_element_factory_make("rtspsrc", "source");
     data.depay = gst_element_factory_make("rtph264depay", "depay");
-    data.tee = gst_element_factory_make("tee", "tee");
-
-    data.video_queue = gst_element_factory_make("queue", "video_queue");
     data.parse = gst_element_factory_make("h264parse", "parse");
     data.decode = gst_element_factory_make("openh264dec", "decode");
     data.convert = gst_element_factory_make("videoconvert", "convert");
+    data.tee = gst_element_factory_make("tee", "tee");
+
+    data.video_queue = gst_element_factory_make("queue", "video_queue");
     data.video_sink = gst_element_factory_make("glimagesink", "video_sink");
 
     data.app_queue = gst_element_factory_make("queue", "app_queue");
@@ -148,13 +191,13 @@ void GstThread::run() {
 
 
     // 요소 연결
-    if (!gst_element_link_many(data.depay, data.tee, nullptr)) {
-        g_printerr("depay | tee could not be linked.\n");
+    if (!gst_element_link_many(data.depay, data.parse, data.decode, data.convert, data.tee, nullptr)) {
+        g_printerr("depay | parse | decode | convert | tee could not be linked.\n");
         gst_object_unref(data.pipeline);
         return;
     }
-    if(!gst_element_link_many(data.video_queue, data.parse, data.decode, data.convert, data.video_sink, nullptr)){
-        g_printerr("video_queue | parse | decode | convert | video_sink tee could not be linked.\n");
+    if(!gst_element_link_many(data.video_queue, data.video_sink, nullptr)){
+        g_printerr("video_queue | video_sink could not be linked.\n");
         gst_object_unref(data.pipeline);
         return;
     }
@@ -232,6 +275,9 @@ void GstThread::run() {
     gst_object_unref (tee_video_pad);
     gst_object_unref (tee_app_pad);
     gst_element_set_state(data.pipeline, GST_STATE_NULL);
+    if (data.writer_initialized) {
+        data.videoWriter.release();
+    }
     gst_object_unref(data.pipeline);
     gst_object_unref(bus);
 }
