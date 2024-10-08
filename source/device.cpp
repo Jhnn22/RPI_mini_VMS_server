@@ -4,10 +4,20 @@
 using namespace std;
 
 Device::Device() {
-    name = "";
-    address = "";
-    status = DISCONNECTED;
+    this->name = "";
+    this->address = "";
+    this->status = DISCONNECTED;
+    this->rtspPort = "";
+}
 
+Device::Device(QString address) {
+    this->name = "";
+    this->address = address;
+    this->status = DISCONNECTED;
+    this->rtspPort = "";
+}
+
+void Device::registerDevice() {
     // 최초 등록
     httplib::Client client(address.toStdString(), HOST_PORT);
     httplib::Result result = client.Get("/register");
@@ -66,4 +76,8 @@ void Device::turnOff() {
         auto error = result.error();
         qDebug() << "HTTP error:" << httplib::to_string(error);
     }
+}
+
+QString Device::getName() {
+    return this->name;
 }
