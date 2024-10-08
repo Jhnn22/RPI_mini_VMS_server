@@ -4,6 +4,7 @@
 #include <QWidget>
 
 class DisplayWidget;
+class DeviceManager;
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -28,8 +29,12 @@ private:
 
     DisplayWidget* focusedDisplay;
 
+    DeviceManager* deviceManager;
+
+    QString focusedDeviceName;
+
     void makePage1();
     void makePage2();
-
+    void initDeviceList();
 };
 #endif // MAINWIDGET_H

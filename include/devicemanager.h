@@ -21,6 +21,7 @@ public:
     void turnOffCamera(QString name);
     QList<QString> getAllName();
     QList<int> getAllStatus();
+    // TODO: 파일 입출력
 };
 
 #endif // DEVICEMANAGER_H

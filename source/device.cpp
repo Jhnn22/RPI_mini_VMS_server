@@ -78,6 +78,10 @@ void Device::turnOff() {
     }
 }
 
+void Device::setAddress(QString address) {
+    this->address = address;
+}
+
 QString Device::getName() {
     return this->name;
 }

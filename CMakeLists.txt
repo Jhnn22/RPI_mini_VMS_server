@@ -37,6 +37,7 @@ set(PROJECT_HEADERS
         include/httplib.h
         include/device.h
         include/devicemanager.h
+        include/deviceregisterdialog.h
 )
 
 set(PROJECT_SOURCES
@@ -45,6 +46,7 @@ set(PROJECT_SOURCES
         source/displaywidget.cpp
         source/device.cpp
         source/devicemanager.cpp
+        source/deviceregisterdialog.cpp
 )
 
 set(PROJECT_UI

@@ -24,6 +24,7 @@ public:
     void updateStatus();
     void turnOn();
     void turnOff();
+    void setAddress(QString address);
     QString getName();
 };
 

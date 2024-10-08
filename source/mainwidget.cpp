@@ -1,6 +1,10 @@
 #include "mainwidget.h"
 #include "ui_mainwidget.h"
 #include "displaywidget.h"
+#include "devicemanager.h"
+#include "deviceregisterdialog.h"
+
+#include <QMessageBox>
 
 MainWidget::MainWidget(QWidget *parent)
     : QWidget(parent)
@@ -37,6 +41,28 @@ MainWidget::MainWidget(QWidget *parent)
     connect(ui->delete_pushButton, &QPushButton::clicked, this, [=]() {
         focusedDisplay->stopVideo();
     });
+
+    connect(ui->addDeviceButton, &QPushButton::clicked, this, [=]() {
+        DeviceRegisterDialog* dialog = new DeviceRegisterDialog();
+        connect(dialog, &DeviceRegisterDialog::dataEntered, this, [=](Device* device) {
+            deviceManager->addDevice(device);
+        });
+        dialog->exec();
+        dialog->deleteLater();
+    });
+
+    connect(ui->removeDeviceButton, &QPushButton::clicked, this, [=]() {
+        if (focusedDeviceName == "") return;
+        QMessageBox::StandardButton reply = QMessageBox::question(this,
+            "삭제 확인",
+            focusedDeviceName+tr("를 삭제합니다."),
+            QMessageBox::Yes | QMessageBox::No);
+
+        if (reply == QMessageBox::Yes) {
+            deviceManager->removeDevice(focusedDeviceName);
+        }
+    });
+
 }
 
 void MainWidget::makePage1() {
@@ -71,9 +97,34 @@ void MainWidget::makePage2() {
     ui->stackedWidget->addWidget(page2);
 }
 
+void MainWidget::initDeviceList() {
+    deviceManager = new DeviceManager();
+    // deviceManager->load();
+    QList<QString> names = this->deviceManager->getAllName();
+    QList<int> status = this->deviceManager->getAllStatus();
+    for (int i = 0; i < names.size(); i++) {
+        QLabel* label = new QLabel(ui->deviceListWidget);
+        label->setText(names[i]);
+        switch (status[i]) {
+        case -1:
+            label->setStyleSheet("QLabel { color : gray }");
+            break;
+        case 0:
+            label->setStyleSheet("QLabel { color : red }");
+            break;
+        case 1:
+            label->setStyleSheet("QLabel { color : green }");
+            break;
+        default:
+            break;
+        }
+    }
+}
+
 MainWidget::~MainWidget()
 {
     delete page1;
     delete page2;
     delete ui;
+    delete deviceManager;
 }
