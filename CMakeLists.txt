@@ -35,12 +35,16 @@ set(PROJECT_HEADERS
         include/gstthread.h
         include/displaywidget.h
         include/httplib.h
+        include/device.h
+        include/devicemanager.h
 )
 
 set(PROJECT_SOURCES
         source/mainwidget.cpp
         source/gstthread.cpp
         source/displaywidget.cpp
+        source/device.cpp
+        source/devicemanager.cpp
 )
 
 set(PROJECT_UI
