@@ -91,7 +91,20 @@ MainWidget::MainWidget(QWidget *parent)
             }
         }
     });
-
+    // 카메라 켜기 버튼
+    connect(ui->cameraOnButton, &QPushButton::clicked, this, [=]() {
+        QListWidgetItem* selectedItem = ui->listWidget->currentItem();
+        if (selectedItem) {
+            deviceManager->turnOnCamera(selectedItem->text());
+        }
+    });
+    // 카메라 끄기 버튼
+    connect(ui->cameraOnButton, &QPushButton::clicked, this, [=]() {
+        QListWidgetItem* selectedItem = ui->listWidget->currentItem();
+        if (selectedItem) {
+            deviceManager->turnOffCamera(selectedItem->text());
+        }
+    });
 }
 
 void MainWidget::makePage1() {
