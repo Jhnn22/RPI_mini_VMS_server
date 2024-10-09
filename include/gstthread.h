@@ -11,6 +11,7 @@ public:
     GstThread(WId windowId, QString rtspURI, QString displayName);
     void stop();
 
+
 protected:
     void run() override;
 
@@ -18,8 +19,9 @@ private:
     WId windowId;
     QString rtspURL;
     QString displayName;
-    QString str2;
+    QString str;
     bool stopped;
+
 };
 
 #endif // GSTTHREAD_H

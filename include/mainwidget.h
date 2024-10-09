@@ -2,6 +2,8 @@
 #define MAINWIDGET_H
 
 #include <QWidget>
+#include <QMediaPlayer>
+#include <QVideoWidget>
 
 class DisplayWidget;
 
@@ -30,6 +32,15 @@ private:
 
     void makePage1();
     void makePage2();
+
+    QStringList getSavedDirs();
+    QStringList getSavedFiles(const QString &dirName);
+
+    QMediaPlayer *mediaPlayer;
+    QVideoWidget *videoWidget;
+    QWidget *subWidget;
+    void playSavedVideo(QString fullPath);
+
 
 };
 #endif // MAINWIDGET_H

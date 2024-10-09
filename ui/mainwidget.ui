@@ -65,7 +65,7 @@
        <height>50</height>
       </size>
      </property>
-     <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,1,0,0,0,0">
+     <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,1,0,0,0,0,0">
       <property name="spacing">
        <number>8</number>
       </property>
@@ -116,6 +116,13 @@
        <widget class="QPushButton" name="delete_pushButton">
         <property name="text">
          <string>삭제</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="load_pushButton">
+        <property name="text">
+         <string>불러오기</string>
         </property>
        </widget>
       </item>

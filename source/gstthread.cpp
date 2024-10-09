@@ -7,6 +7,7 @@
 #include <QDateTime>
 #define WIDTH 640
 #define HEIGHT 480
+#define TOP_DIR QString("../../saved_video")
 using namespace std;
 using namespace cv;
 
@@ -106,14 +107,11 @@ GstThread::GstThread(WId windowId, QString rtspURL, QString displayName) : windo
     stopped = false;
 
     // 저장 경로 설정
-    QString str1 = "../../recorded_video";
     QDir topDir;
-    if(!topDir.exists(str1)) topDir.mkdir(str1);    // 처음 한번만 topDir 생성
-    str2 = str1 + "/" + displayName;
+    if(!topDir.exists(TOP_DIR)) topDir.mkdir(TOP_DIR);    // 처음 한번만 topDir 생성
+    str = TOP_DIR + "/" + displayName;
     QDir subDir;
-    if(!subDir.exists(str2)) subDir.mkdir(str2);    // 처음 한번만 subDir 생성
-
-
+    if(!subDir.exists(str)) subDir.mkdir(str);    // 처음 한번만 subDir 생성
 }
 
 void GstThread::stop() {
@@ -123,7 +121,7 @@ void GstThread::stop() {
 void GstThread::run() {
     // gst_debug_set_default_threshold(GST_LEVEL_WARNING);  // gst 디버그 범위 설정 코드
     CustomData data;
-    data.path = str2;
+    data.path = str;
     GstPad *tee_video_pad, *tee_app_pad;
     GstPad *queue_video_pad, *queue_app_pad;
     GstBus *bus;
