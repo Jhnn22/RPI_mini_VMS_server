@@ -31,8 +31,6 @@ private:
 
     DeviceManager* deviceManager;
 
-    QString focusedDeviceName;
-
     void makePage1();
     void makePage2();
     void initDeviceList();

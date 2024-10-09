@@ -21,10 +21,12 @@ MainWidget::MainWidget(QWidget *parent)
 
     initDeviceList();
 
+    // 확대 버튼
     connect(ui->zoom_in_pushButton, &QPushButton::clicked, this, [&](){
         page2->layout()->addWidget(focusedDisplay);
         ui->stackedWidget->setCurrentIndex(1);
     });
+    // 축소 버튼
     connect(ui->zoom_out_pushButton, &QPushButton::clicked, this, [&](){
         QGridLayout* page1_layout = qobject_cast<QGridLayout*>(page1->layout());
         if (page1_layout) {
@@ -32,7 +34,7 @@ MainWidget::MainWidget(QWidget *parent)
         }
         ui->stackedWidget->setCurrentIndex(0);
     });
-
+    // 연결 버튼
     connect(ui->connectButton, &QPushButton::clicked, this, [=]() {
         // TODO : url 체크
         QListWidgetItem* item = ui->listWidget->currentItem();
@@ -56,11 +58,11 @@ MainWidget::MainWidget(QWidget *parent)
             focusedDisplay->playVideo(address);
         }
     });
-
+    // 연결 해제 버튼
     connect(ui->disconnectButton, &QPushButton::clicked, this, [=]() {
         focusedDisplay->stopVideo();
     });
-
+    // 장치 추가 버튼
     connect(ui->addDeviceButton, &QPushButton::clicked, this, [=]() {
         DeviceRegisterDialog* dialog = new DeviceRegisterDialog();
         connect(dialog, &DeviceRegisterDialog::dataEntered, this, [=](Device* device) {
@@ -69,7 +71,7 @@ MainWidget::MainWidget(QWidget *parent)
         dialog->exec();
         dialog->deleteLater();
     });
-
+    // 장치 삭제 버튼
     connect(ui->removeDeviceButton, &QPushButton::clicked, this, [=]() {
         QListWidgetItem* selectedItem = ui->listWidget->currentItem();
         if (selectedItem) {
@@ -86,7 +88,6 @@ MainWidget::MainWidget(QWidget *parent)
                 int row = ui->listWidget->row(selectedItem);
                 ui->listWidget->takeItem(row);
                 delete selectedItem;
-                focusedDeviceName = "";
             }
         }
     });
@@ -126,7 +127,6 @@ void MainWidget::makePage2() {
 }
 
 void MainWidget::initDeviceList() {
-    focusedDeviceName = "";
     deviceManager = new DeviceManager();
     // deviceManager->load();
     // -----------------------test --------------
@@ -166,11 +166,6 @@ void MainWidget::initDeviceList() {
         }
         item->setTextAlignment(Qt::AlignCenter);
     }
-
-    connect(ui->listWidget, &QListWidget::itemClicked, this, [=](QListWidgetItem* item) {
-        focusedDeviceName = item->text();
-        qDebug() << "Focused device :" << focusedDeviceName;
-    });
 }
 
 MainWidget::~MainWidget()
