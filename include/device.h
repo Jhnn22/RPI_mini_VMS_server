@@ -26,6 +26,7 @@ public:
     void turnOff();
     void setAddress(QString address);
     QString getName();
+    QString getAddress();
 
     // 테스트용
     void setName(QString name);

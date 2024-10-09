@@ -67,3 +67,21 @@ QList<int> DeviceManager::getAllStatus() {
     }
     return status;
 }
+
+QString DeviceManager::getAddress(QString name) {
+    int found = findByName(name);
+    if (found == -1) {
+        qDebug() << "There's no device";
+        return "";
+    }
+    return this->devices[found]->getAddress();
+}
+
+int DeviceManager::getStatus(QString name) {
+    int found = findByName(name);
+    if (found == -1) {
+        qDebug() << "There's no device";
+        return -2;
+    }
+    return this->devices[found]->getStatus();
+}

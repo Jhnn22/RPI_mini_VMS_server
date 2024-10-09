@@ -86,6 +86,10 @@ QString Device::getName() {
     return this->name;
 }
 
+QString Device::getAddress() {
+    return this->address;
+}
+
 // test 용
 void Device::setName(QString name) {
     this->name = name;

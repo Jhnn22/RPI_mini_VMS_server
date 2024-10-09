@@ -21,6 +21,8 @@ public:
     void turnOffCamera(QString name);
     QList<QString> getAllName();
     QList<int> getAllStatus();
+    QString getAddress(QString name);
+    int getStatus(QString name);
     // TODO: 파일 입출력
 };
 

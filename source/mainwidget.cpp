@@ -4,6 +4,8 @@
 #include "devicemanager.h"
 #include "deviceregisterdialog.h"
 
+#include <string>
+
 #include <QMessageBox>
 #include <QListWidgetItem>
 
@@ -31,17 +33,31 @@ MainWidget::MainWidget(QWidget *parent)
         ui->stackedWidget->setCurrentIndex(0);
     });
 
-    connect(ui->change_pushButton, &QPushButton::clicked, this, [=]() {
+    connect(ui->connectButton, &QPushButton::clicked, this, [=]() {
         // TODO : url 체크
-        // 만약 focus된 화면이면 안바뀌게 - 저장할 수 없으니까
-        // QString url = ui->ip_lineEdit->text();
-        // if (url != "" && focusedDisplay) {
-        //     qDebug() << "start video" << focusedDisplay->objectName() << url;
-        //     focusedDisplay->playVideo(url);
-        // }
+        QListWidgetItem* item = ui->listWidget->currentItem();
+        if (!item) {
+            qDebug() << "There's no item";
+            return;
+        }
+        int deviceStatus = deviceManager->getStatus(item->text());
+        if (deviceStatus == DISCONNECTED) {
+            qDebug() << "disconnected";
+            return;
+        }
+        else if (deviceStatus == CAMERA_OFF) {
+            qDebug() << "camera is not running";
+            return;
+        }
+
+        QString address = deviceManager->getAddress(item->text());
+        if (address != "" && focusedDisplay) {
+            qDebug() << "start video at" << focusedDisplay->objectName() << address;
+            focusedDisplay->playVideo(address);
+        }
     });
 
-    connect(ui->delete_pushButton, &QPushButton::clicked, this, [=]() {
+    connect(ui->disconnectButton, &QPushButton::clicked, this, [=]() {
         focusedDisplay->stopVideo();
     });
 
@@ -123,6 +139,11 @@ void MainWidget::initDeviceList() {
     deviceManager->addDevice(d1);
     deviceManager->addDevice(d2);
     deviceManager->addDevice(d3);
+    for (int i = 0; i < 10; i++) {
+        Device* d = new Device(tr("123.123.123"));
+        d->setName(QString::fromStdString(std::to_string(i)));
+        deviceManager->addDevice(d);
+    }
     //------------------------------------------
 
     QList<QString> names = this->deviceManager->getAllName();

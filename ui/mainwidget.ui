@@ -213,14 +213,14 @@
        </spacer>
       </item>
       <item>
-       <widget class="QPushButton" name="change_pushButton">
+       <widget class="QPushButton" name="connectButton">
         <property name="text">
          <string>연결</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="delete_pushButton">
+       <widget class="QPushButton" name="disconnectButton">
         <property name="text">
          <string>연결 해제</string>
         </property>
