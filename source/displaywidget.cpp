@@ -8,7 +8,8 @@ DisplayWidget::DisplayWidget(QWidget *parent) : QWidget(parent), m_hasFocus(fals
 
 void DisplayWidget::playVideo(QString rtspURI) {
     stopVideo();
-    thread = new GstThread(window->winId(), rtspURI);
+    QString displayName = this->objectName();
+    thread = new GstThread(window->winId(), rtspURI, displayName);
     connect(thread, &QThread::finished, thread, &QObject::deleteLater);
     thread->start();
 }

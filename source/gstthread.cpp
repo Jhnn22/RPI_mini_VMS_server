@@ -3,10 +3,13 @@
 #include <gst/gst.h>
 #include <gst/video/videooverlay.h>
 #include <opencv2/opencv.hpp>
+#include <QDir>
+#include <QDateTime>
 #define WIDTH 640
 #define HEIGHT 480
 using namespace std;
 using namespace cv;
+
 
 typedef struct _CustomData{
     GstElement *pipeline, *source, *depay, *parse, *decode, *convert, *tee;
@@ -15,16 +18,11 @@ typedef struct _CustomData{
     VideoWriter videoWriter;
     Mat before, after;
     bool size_initialized = false, writer_initialized = false;
+    QString path;
 
 } CustomData;
 
 static void pad_added_handler(GstElement *src, GstPad *new_pad, GstElement *depay) {
-    /*
-     * 동적 패드 연결을 위한 핸들러
-     * rtsp로 받는 source는 영상 데이터일 수도 있고, 음성 데이터일 수도 있기 때문에
-     * 동적으로 패드를 연결해야 함.
-     */
-
     GstPad *sink_pad = gst_element_get_static_pad(depay, "sink");
     if (gst_pad_is_linked(sink_pad)) {
         g_object_unref(sink_pad);
@@ -60,12 +58,15 @@ static GstFlowReturn new_sample (GstElement *sink, CustomData *data) {
         buffer = gst_sample_get_buffer(sample);
         // 처음 한 번만 해상도 초기화
         if (!data->size_initialized) {
-            const String filename = "./recorded_video.mp4";
+            // subDir가 열려있는 경우에만 아래의 파일 생성 로직 실행
+            qDebug() << data->path;
+            QDateTime currentDateTime = QDateTime::currentDateTime();
+            const String filename = data->path.toStdString() + "/" + currentDateTime.toString("yyyy-MM-dd ddd HHmmss").toStdString() + ".mp4";    // ex) 2024-10-09 WEN 175722
             int fourcc = VideoWriter::fourcc('m', 'p', '4', 'v');
             double fps = 24.0;
             data->videoWriter.open(filename, fourcc, fps, Size(WIDTH, HEIGHT));
             if (!data->videoWriter.isOpened()) {
-                g_printerr("Could not open the output video file for write\n");
+                g_printerr("Could not open the file for write\n");
                 return GST_FLOW_ERROR;
             }
             data->size_initialized = true;
@@ -101,8 +102,18 @@ static GstFlowReturn new_sample (GstElement *sink, CustomData *data) {
     return GST_FLOW_ERROR;
 }
 
-GstThread::GstThread(WId windowId, QString rtspURL) : windowId(windowId), rtspURL(rtspURL) {
+GstThread::GstThread(WId windowId, QString rtspURL, QString displayName) : windowId(windowId), rtspURL(rtspURL), displayName(displayName) {
     stopped = false;
+
+    // 저장 경로 설정
+    QString str1 = "../../recorded_video";
+    QDir topDir;
+    if(!topDir.exists(str1)) topDir.mkdir(str1);    // 처음 한번만 topDir 생성
+    str2 = str1 + "/" + displayName;
+    QDir subDir;
+    if(!subDir.exists(str2)) subDir.mkdir(str2);    // 처음 한번만 subDir 생성
+
+
 }
 
 void GstThread::stop() {
@@ -112,10 +123,12 @@ void GstThread::stop() {
 void GstThread::run() {
     // gst_debug_set_default_threshold(GST_LEVEL_WARNING);  // gst 디버그 범위 설정 코드
     CustomData data;
+    data.path = str2;
     GstPad *tee_video_pad, *tee_app_pad;
     GstPad *queue_video_pad, *queue_app_pad;
     GstBus *bus;
     GstMessage *msg;
+
 
     // 파이프라인 생성
     data.pipeline = gst_pipeline_new("rtsp-player");
@@ -186,7 +199,8 @@ void GstThread::run() {
     g_signal_connect(data.app_sink, "new-sample", G_CALLBACK(new_sample), &data);
 
     // RTSP 소스 속성 설정
-    string rtsp_location = "rtsp://"+ rtspURL.toStdString() +":8554/test";
+    // string rtsp_location = "rtsp://"+ rtspURL.toStdString() +":8554/test";
+    string rtsp_location = "rtsp://210.99.70.120:1935/live/cctv001.stream";  // 테스트 코드
     g_object_set(G_OBJECT(data.source), "location", rtsp_location.c_str(), nullptr);
 
 

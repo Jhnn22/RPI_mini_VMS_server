@@ -8,7 +8,7 @@ class GstThread : public QThread
 {
     Q_OBJECT
 public:
-    GstThread(WId windowId, QString rtspURI);
+    GstThread(WId windowId, QString rtspURI, QString displayName);
     void stop();
 
 protected:
@@ -17,6 +17,8 @@ protected:
 private:
     WId windowId;
     QString rtspURL;
+    QString displayName;
+    QString str2;
     bool stopped;
 };
 
