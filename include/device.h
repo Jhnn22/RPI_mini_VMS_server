@@ -8,6 +8,7 @@
 #define CAMERA_OFF      0
 #define HOST_PORT       5000
 
+class QJsonDocument;
 
 class Device
 {
@@ -28,6 +29,7 @@ public:
     QString getName();
     QString getAddress();
 
+    QJsonDocument stringToJsonDoc(std::string& content);
     // 테스트용
     void setName(QString name);
 };

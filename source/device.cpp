@@ -1,6 +1,7 @@
 #include "device.h"
 #include "httplib.h"
 #include <QDebug>
+#include <QJsonDocument>
 using namespace std;
 
 Device::Device() {
@@ -24,6 +25,14 @@ void Device::registerDevice() {
     if (result)  {
         if (result->status == httplib::StatusCode::OK_200) {
             qDebug() << result->body;
+            QJsonDocument res = stringToJsonDoc(result->body);
+            if (res["message"] == "error") {
+                qDebug() << res["error"];
+                return;
+            }
+            this->name = res["name"].toString();
+            this->rtspPort = res["port"].toString();
+            updateStatus();
         }
     } else {
         auto error = result.error();
@@ -41,10 +50,18 @@ void Device::updateStatus() {
     if (result)  {
         if (result->status == httplib::StatusCode::OK_200) {
             qDebug() << result->body;
+            QJsonDocument res = stringToJsonDoc(result->body);
+            if (res["message"] == "running") {
+                this->status = CAMERA_ON;
+            }
+            else if (res["message"] == "stopped") {
+                this->status = CAMERA_OFF;
+            }
         }
     } else {
         auto error = result.error();
         qDebug() << "HTTP error:" << httplib::to_string(error);
+        this->status = DISCONNECTED;
     }
 }
 
@@ -56,6 +73,14 @@ void Device::turnOn() {
     if (result)  {
         if (result->status == httplib::StatusCode::OK_200) {
             qDebug() << result->body;
+            QJsonDocument res = stringToJsonDoc(result->body);
+            if (res["message"] == "failed") {
+                qDebug() << "camera on reqeust failed";
+                return;
+            }
+            else if (res["message"] == "success") {
+                this->status = CAMERA_ON;
+            }
         }
     } else {
         auto error = result.error();
@@ -71,6 +96,14 @@ void Device::turnOff() {
     if (result)  {
         if (result->status == httplib::StatusCode::OK_200) {
             qDebug() << result->body;
+            QJsonDocument res = stringToJsonDoc(result->body);
+            if (res["message"] == "failed") {
+                qDebug() << "camera on reqeust failed";
+                return;
+            }
+            else if (res["message"] == "success") {
+                this->status = CAMERA_OFF;
+            }
         }
     } else {
         auto error = result.error();
@@ -89,7 +122,9 @@ QString Device::getName() {
 QString Device::getAddress() {
     return this->address;
 }
-
+QJsonDocument Device::stringToJsonDoc(std::string& content) {
+    return QJsonDocument::fromJson(QString::fromStdString(content).toUtf8());
+}
 // test 용
 void Device::setName(QString name) {
     this->name = name;
