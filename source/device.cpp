@@ -21,6 +21,7 @@ Device::Device(QString address) {
 void Device::registerDevice() {
     // 최초 등록
     httplib::Client client(address.toStdString(), HOST_PORT);
+    client.set_connection_timeout(0, 10000);
     httplib::Result result = client.Get("/register");
     if (result)  {
         if (result->status == httplib::StatusCode::OK_200) {

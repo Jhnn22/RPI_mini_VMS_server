@@ -1,40 +1,42 @@
 #include "deviceregisterdialog.h"
-#include <QWidget>
-#include <QVBoxLayout>
+#include "ui_deviceregisterdialog.h"
+#include "device.h"
+
+#include <QDialog>
+#include <QLineEdit>
+#include <QPushButton>
 
 DeviceRegisterDialog::DeviceRegisterDialog(QWidget *parent)
-    :QDialog(parent)
+    : QDialog(parent)
+    , ui(new Ui::DeviceRegisterDialog)
 {
-    QVBoxLayout* layout = new QVBoxLayout(this);
-
-    address = new QLineEdit(this);
-    connectButton = new QPushButton("연결", this);
-    confirmButton = new QPushButton("추가", this);
-    cancelButton = new QPushButton("취소", this);
-    confirmButton->setDisabled(true);
-
-    layout->addWidget(address);
-    layout->addWidget(connectButton);
-    layout->addWidget(confirmButton);
-    layout->addWidget(cancelButton);
-
+    ui->setupUi(this);
     device = new Device();
 
-    connect(connectButton, &QPushButton::clicked, this, [=]{
-        device->setAddress(address->text());
+    ui->confirmButton->setDisabled(true);
+
+    connect(ui->connectButton, &QPushButton::clicked, this, [=]{
+        device->setAddress(ui->ipAddress->text());
         device->registerDevice();
         if (device->getStatus() != DISCONNECTED) {
-            connectButton->setDisabled(true);
-            confirmButton->setDisabled(false);
+            ui->connectButton->setDisabled(true);
+            ui->confirmButton->setDisabled(false);
+            ui->statusLabel->setText(tr("연결 완료. 추가 버튼을 눌러 장치를 추가해주세요."));
+        }
+        else {
+            ui->statusLabel->setText(tr("연결 실패. 주소를 다시 확인해주세요."));
         }
     });
 
-    connect(confirmButton, &QPushButton::clicked, this, [=]{
+    connect(ui->confirmButton, &QPushButton::clicked, this, [=]{
         emit dataEntered(device);
         accept();
     });
 
-    connect(cancelButton, &QPushButton::clicked, this, [=]{
-        accept();
-    });
+    connect(ui->cancelButton, &QPushButton::clicked, this, &QDialog::reject);
+}
+
+DeviceRegisterDialog::~DeviceRegisterDialog()
+{
+    delete ui;
 }

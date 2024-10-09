@@ -51,6 +51,7 @@ set(PROJECT_SOURCES
 
 set(PROJECT_UI
         ui/mainwidget.ui
+        ui/deviceregisterdialog.ui
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
