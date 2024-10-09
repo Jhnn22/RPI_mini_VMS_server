@@ -5,6 +5,7 @@
 
 class DisplayWidget;
 class DeviceManager;
+class QListWidgetItem;
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -34,5 +35,6 @@ private:
     void makePage1();
     void makePage2();
     void initDeviceList();
+    void paintItem(QListWidgetItem* item, int status);
 };
 #endif // MAINWIDGET_H

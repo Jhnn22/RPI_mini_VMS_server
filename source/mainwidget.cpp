@@ -8,6 +8,7 @@
 
 #include <QMessageBox>
 #include <QListWidgetItem>
+#include <QTimer>
 
 MainWidget::MainWidget(QWidget *parent)
     : QWidget(parent)
@@ -66,7 +67,12 @@ MainWidget::MainWidget(QWidget *parent)
     connect(ui->addDeviceButton, &QPushButton::clicked, this, [=]() {
         DeviceRegisterDialog* dialog = new DeviceRegisterDialog();
         connect(dialog, &DeviceRegisterDialog::dataEntered, this, [=](Device* device) {
+            // 장치 매니저 추가
             deviceManager->addDevice(device);
+            // listWidget 추가
+            QListWidgetItem* item = new QListWidgetItem(device->getName(), ui->listWidget);
+            paintItem(item, device->getStatus());
+            item->setTextAlignment(Qt::AlignCenter);
         });
         dialog->exec();
         dialog->deleteLater();
@@ -105,6 +111,17 @@ MainWidget::MainWidget(QWidget *parent)
             deviceManager->turnOffCamera(selectedItem->text());
         }
     });
+    // 주기적으로 장치 상태 업데이트
+    QTimer* timer = new QTimer(this);
+    connect(timer, &QTimer::timeout, this, [=]() {
+        deviceManager->updateAll();
+        QList<int> status = this->deviceManager->getAllStatus();
+        for (int i = 0; i < status.size(); i++) {
+            auto item = ui->listWidget->item(i);
+            paintItem(item, status[i]);
+        }
+    });
+    timer->start(10000);
 }
 
 void MainWidget::makePage1() {
@@ -143,9 +160,9 @@ void MainWidget::initDeviceList() {
     deviceManager = new DeviceManager();
     // deviceManager->load();
     // -----------------------test --------------
-    Device* d1 = new Device(tr("192.168.0.16"));
-    Device* d2 = new Device(tr("192.168.0.3"));
-    Device* d3 = new Device(tr("192.168.0.4"));
+    Device* d1 = new Device(tr("192.168.0.1"));
+    Device* d2 = new Device(tr("192.168.0.2"));
+    Device* d3 = new Device(tr("192.168.0.3"));
     d1->setName("test1");
     d2->setName("test2");
     d3->setName("test3");
@@ -153,7 +170,7 @@ void MainWidget::initDeviceList() {
     deviceManager->addDevice(d2);
     deviceManager->addDevice(d3);
     for (int i = 0; i < 10; i++) {
-        Device* d = new Device(tr("123.123.123"));
+        Device* d = new Device(tr("222.222.222.222"));
         d->setName(QString::fromStdString(std::to_string(i)));
         deviceManager->addDevice(d);
     }
@@ -164,20 +181,24 @@ void MainWidget::initDeviceList() {
     for (int i = 0; i < names.size(); i++) {
         qDebug() << names[i];
         QListWidgetItem* item = new QListWidgetItem(names[i], ui->listWidget);
-        switch (status[i]) {
-        case DISCONNECTED:
-            item->setForeground(QBrush(Qt::gray));
-            break;
-        case CAMERA_OFF:
-            item->setForeground(QBrush(Qt::red));
-            break;
-        case CAMERA_ON:
-            item->setForeground(QBrush(Qt::green));
-            break;
-        default:
-            break;
-        }
+        paintItem(item, status[i]);
         item->setTextAlignment(Qt::AlignCenter);
+    }
+}
+
+void MainWidget::paintItem(QListWidgetItem* item, int status) {
+    switch (status) {
+    case DISCONNECTED:
+        item->setForeground(QBrush(Qt::gray));
+        break;
+    case CAMERA_OFF:
+        item->setForeground(QBrush(Qt::red));
+        break;
+    case CAMERA_ON:
+        item->setForeground(QBrush(Qt::green));
+        break;
+    default:
+        break;
     }
 }
 

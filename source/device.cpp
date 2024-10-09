@@ -46,6 +46,7 @@ int  Device::getStatus() {
 
 void Device::updateStatus() {
     httplib::Client client(address.toStdString(), HOST_PORT);
+    client.set_connection_timeout(0, 10000);
     httplib::Result result = client.Get("/cam-status");
     if (result)  {
         if (result->status == httplib::StatusCode::OK_200) {
