@@ -52,6 +52,12 @@
        <height>0</height>
       </size>
      </property>
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>16777215</height>
+      </size>
+     </property>
      <layout class="QVBoxLayout" name="verticalLayout" stretch="0,1,0,0">
       <property name="leftMargin">
        <number>0</number>
@@ -69,11 +75,14 @@
        <widget class="QLabel" name="deviceListLabel">
         <property name="font">
          <font>
-          <pointsize>20</pointsize>
+          <pointsize>16</pointsize>
          </font>
         </property>
         <property name="text">
          <string>장치 목록</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignmentFlag::AlignCenter</set>
         </property>
        </widget>
       </item>
@@ -94,7 +103,7 @@
            <x>0</x>
            <y>0</y>
            <width>256</width>
-           <height>387</height>
+           <height>392</height>
           </rect>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -117,7 +126,7 @@
            <widget class="QListWidget" name="listWidget">
             <property name="font">
              <font>
-              <pointsize>20</pointsize>
+              <pointsize>14</pointsize>
              </font>
             </property>
            </widget>
