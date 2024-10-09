@@ -99,7 +99,7 @@ MainWidget::MainWidget(QWidget *parent)
         }
     });
     // 카메라 끄기 버튼
-    connect(ui->cameraOnButton, &QPushButton::clicked, this, [=]() {
+    connect(ui->cameraOffButton, &QPushButton::clicked, this, [=]() {
         QListWidgetItem* selectedItem = ui->listWidget->currentItem();
         if (selectedItem) {
             deviceManager->turnOffCamera(selectedItem->text());
