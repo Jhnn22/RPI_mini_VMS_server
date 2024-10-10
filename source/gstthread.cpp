@@ -197,8 +197,7 @@ void GstThread::run() {
     g_signal_connect(data.app_sink, "new-sample", G_CALLBACK(new_sample), &data);
 
     // RTSP 소스 속성 설정
-    // string rtsp_location = "rtsp://"+ rtspURL.toStdString() +":8554/test";
-    string rtsp_location = "rtsp://210.99.70.120:1935/live/cctv001.stream";  // 테스트 코드
+    string rtsp_location = "rtsp://"+ rtspURL.toStdString();
     g_object_set(G_OBJECT(data.source), "location", rtsp_location.c_str(), nullptr);
 
 

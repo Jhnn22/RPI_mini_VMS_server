@@ -40,16 +40,24 @@ set(PROJECT_HEADERS
         include/mainwidget.h
         include/gstthread.h
         include/displaywidget.h
+        include/httplib.h
+        include/device.h
+        include/devicemanager.h
+        include/deviceregisterdialog.h
 )
 
 set(PROJECT_SOURCES
         source/mainwidget.cpp
         source/gstthread.cpp
         source/displaywidget.cpp
+        source/device.cpp
+        source/devicemanager.cpp
+        source/deviceregisterdialog.cpp
 )
 
 set(PROJECT_UI
         ui/mainwidget.ui
+        ui/deviceregisterdialog.ui
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)

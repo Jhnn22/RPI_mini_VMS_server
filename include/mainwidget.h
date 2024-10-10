@@ -6,6 +6,8 @@
 #include <QVideoWidget>
 
 class DisplayWidget;
+class DeviceManager;
+class QListWidgetItem;
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -30,8 +32,12 @@ private:
 
     DisplayWidget* focusedDisplay;
 
+    DeviceManager* deviceManager;
+
     void makePage1();
     void makePage2();
+    void initDeviceList();
+    void paintItem(QListWidgetItem* item, int status);
 
     QStringList getSavedDirs();
     QStringList getSavedFiles(const QString &dirName);
@@ -41,7 +47,5 @@ private:
 
     void setupUI();
     void playSavedVideo(QString fullPath);
-
-
 };
 #endif // MAINWIDGET_H
