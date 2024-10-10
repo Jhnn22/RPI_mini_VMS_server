@@ -2,6 +2,8 @@
 #define MAINWIDGET_H
 
 #include <QWidget>
+#include <QMediaPlayer>
+#include <QVideoWidget>
 
 class DisplayWidget;
 class DeviceManager;
@@ -36,5 +38,14 @@ private:
     void makePage2();
     void initDeviceList();
     void paintItem(QListWidgetItem* item, int status);
+
+    QStringList getSavedDirs();
+    QStringList getSavedFiles(const QString &dirName);
+
+    QMediaPlayer *mediaPlayer;
+    QVideoWidget *videoWidget;
+
+    void setupUI();
+    void playSavedVideo(QString fullPath);
 };
 #endif // MAINWIDGET_H
