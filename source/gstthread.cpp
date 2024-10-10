@@ -100,7 +100,7 @@ void GstThread::run() {
     g_signal_connect(source, "pad-added", G_CALLBACK(pad_added_handler), depay);
 
     // RTSP 소스 속성 설정
-    string rtsp_location = "rtsp://"+ rtspURL.toStdString() +":8554/test";
+    string rtsp_location = "rtsp://"+ rtspURL.toStdString();
     g_object_set(G_OBJECT(source), "location", rtsp_location.c_str(), nullptr);
 
     // 요소 연결

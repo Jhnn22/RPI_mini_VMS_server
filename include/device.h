@@ -6,7 +6,7 @@
 #define DISCONNECTED    -1
 #define CAMERA_ON       1
 #define CAMERA_OFF      0
-#define HOST_PORT       5000
+#define HOST_PORT       8080
 
 class QJsonDocument;
 
@@ -15,6 +15,7 @@ class Device
     QString name;
     QString address;
     QString rtspPort;
+    QString mount;
     int status;
 
 public:
@@ -28,7 +29,8 @@ public:
     void setAddress(QString address);
     QString getName();
     QString getAddress();
-
+    QString getRtspPort();
+    QString getMount();
     QJsonDocument stringToJsonDoc(std::string& content);
     // 테스트용
     void setName(QString name);

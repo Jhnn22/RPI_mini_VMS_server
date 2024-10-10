@@ -8,6 +8,7 @@ Device::Device() {
     this->name = "";
     this->address = "";
     this->status = DISCONNECTED;
+    this->mount = "";
     this->rtspPort = "";
 }
 
@@ -15,14 +16,16 @@ Device::Device(QString address) {
     this->name = "";
     this->address = address;
     this->status = DISCONNECTED;
+    this->mount = "";
     this->rtspPort = "";
 }
 
 void Device::registerDevice() {
+    qDebug() << "register";
     // 최초 등록
     httplib::Client client(address.toStdString(), HOST_PORT);
-    client.set_connection_timeout(0, 10000);
-    httplib::Result result = client.Get("/register");
+    // client.set_connection_timeout(0, 10000);
+    httplib::Result result = client.Post("/register");
     if (result)  {
         if (result->status == httplib::StatusCode::OK_200) {
             qDebug() << result->body;
@@ -32,6 +35,7 @@ void Device::registerDevice() {
                 return;
             }
             this->name = res["name"].toString();
+            this->mount = res["mount"].toString();
             this->rtspPort = res["port"].toString();
             updateStatus();
         }
@@ -69,9 +73,9 @@ void Device::updateStatus() {
 
 void Device::turnOn() {
     httplib::Client client(address.toStdString(), HOST_PORT);
-    httplib::Params params;
-    params.emplace("camera", "on");
-    httplib::Result result = client.Post("/cam", params);
+    QJsonValue jsonBody("{ \"camera\" : \"on\" }");
+    QString body = jsonBody.toString();
+    httplib::Result result = client.Post("/cam", body.toStdString(), "application/json");
     if (result)  {
         if (result->status == httplib::StatusCode::OK_200) {
             qDebug() << result->body;
@@ -92,9 +96,9 @@ void Device::turnOn() {
 
 void Device::turnOff() {
     httplib::Client client(address.toStdString(), HOST_PORT);
-    httplib::Params params;
-    params.emplace("camera", "off");
-    httplib::Result result = client.Post("/cam", params);
+    QJsonValue jsonBody("{ \"camera\" : \"off\" }");
+    QString body = jsonBody.toString();
+    httplib::Result result = client.Post("/cam", body.toStdString(), "application/json");
     if (result)  {
         if (result->status == httplib::StatusCode::OK_200) {
             qDebug() << result->body;
@@ -124,6 +128,14 @@ QString Device::getName() {
 QString Device::getAddress() {
     return this->address;
 }
+QString Device::getRtspPort() {
+    return this->rtspPort;
+}
+
+QString Device::getMount() {
+    return this->mount;
+}
+
 QJsonDocument Device::stringToJsonDoc(std::string& content) {
     return QJsonDocument::fromJson(QString::fromStdString(content).toUtf8());
 }

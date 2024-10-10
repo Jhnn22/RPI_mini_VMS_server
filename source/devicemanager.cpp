@@ -74,7 +74,9 @@ QString DeviceManager::getAddress(QString name) {
         qDebug() << "There's no device";
         return "";
     }
-    return this->devices[found]->getAddress();
+    Device* device = this->devices[found];
+    QString address = device->getAddress() + ":" + device->getRtspPort() + device->getMount();
+    return address;
 }
 
 int DeviceManager::getStatus(QString name) {

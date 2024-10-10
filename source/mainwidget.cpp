@@ -160,10 +160,10 @@ void MainWidget::initDeviceList() {
     deviceManager = new DeviceManager();
     // deviceManager->load();
     // -----------------------test --------------
-    Device* d1 = new Device(tr("192.168.0.1"));
+    Device* d1 = new Device(tr("192.168.0.118"));
     Device* d2 = new Device(tr("192.168.0.2"));
     Device* d3 = new Device(tr("192.168.0.3"));
-    d1->setName("test1");
+    d1->setName("우근");
     d2->setName("test2");
     d3->setName("test3");
     deviceManager->addDevice(d1);
