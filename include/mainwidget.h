@@ -38,7 +38,8 @@ private:
 
     QMediaPlayer *mediaPlayer;
     QVideoWidget *videoWidget;
-    QWidget *subWidget;
+
+    void setupUI();
     void playSavedVideo(QString fullPath);
 
 

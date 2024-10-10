@@ -3,8 +3,8 @@
 #include "displaywidget.h"
 #include <QDir>
 #include <QListWidget>
-#include <QMessageBox>
-#include <QShortcut>
+#include <QDialog>
+
 #define TOP_DIR QString("../../saved_video")
 
 
@@ -17,17 +17,19 @@ MainWidget::MainWidget(QWidget *parent)
     makePage2();
 
     ui->stackedWidget->setCurrentIndex(0);
+    ui->stackedWidget_2->setCurrentIndex(0);
 
+    // stackedWidget_2 버튼 설정
     connect(ui->zoom_in_pushButton, &QPushButton::clicked, this, [&](){
         page2->layout()->addWidget(focusedDisplay);
-        ui->stackedWidget->setCurrentIndex(1);
+        ui->stackedWidget_2->setCurrentIndex(1);
     });
     connect(ui->zoom_out_pushButton, &QPushButton::clicked, this, [&](){
         QGridLayout* page1_layout = qobject_cast<QGridLayout*>(page1->layout());
         if (page1_layout) {
             page1_layout->addWidget(focusedDisplay, displays[focusedDisplay].first, displays[focusedDisplay].second);
         }
-        ui->stackedWidget->setCurrentIndex(0);
+        ui->stackedWidget_2->setCurrentIndex(0);
     });
 
     connect(ui->change_pushButton, &QPushButton::clicked, this, [=]() {
@@ -122,62 +124,41 @@ QStringList MainWidget::getSavedFiles(const QString &dirName){
 }
 
 void MainWidget::playSavedVideo(QString fullPath){
-    // 새 subWidget 생성
-    subWidget = new QWidget(this);
-    QVBoxLayout *mainLayout = new QVBoxLayout(subWidget);
+    // 화면 전환
+    ui->stackedWidget->setCurrentIndex(1);
 
     // VideoWidget 설정
-    videoWidget = new QVideoWidget(subWidget);
-    mainLayout->addWidget(videoWidget);
+    videoWidget = new QVideoWidget(this);
+    ui->layout->addWidget(videoWidget);
 
     // MediaPlayer 설정
-    mediaPlayer = new QMediaPlayer();
+    mediaPlayer = new QMediaPlayer(this);
     mediaPlayer->setVideoOutput(videoWidget);
     mediaPlayer->setSource(QUrl::fromLocalFile(fullPath));
 
-    // 컨트롤 버튼을 위한 수평 레이아웃
-    QHBoxLayout *controlLayout = new QHBoxLayout();
-
-    // 버튼 생성
-    QPushButton *playButton = new QPushButton("재생", subWidget);
-    QPushButton *pauseButton = new QPushButton("일시정지");
-    QPushButton *stopButton = new QPushButton("종료", subWidget);
-    QPushButton *rewindButton = new QPushButton("되감기", subWidget);
-    QPushButton *forwardButton = new QPushButton("빨리감기", subWidget);
-
     // 버튼 연결
-    connect(playButton, &QPushButton::clicked, mediaPlayer, &QMediaPlayer::play);
-    connect(pauseButton, &QPushButton::clicked, mediaPlayer, &QMediaPlayer::pause);
-    connect(stopButton, &QPushButton::clicked, this, [this](){
-        mediaPlayer->stop();
-        // 현재 비디오가 종료되었으므로 page1로 돌아가도록 설정
-        ui->stackedWidget->setCurrentIndex(0); // page1으로 돌아가기
-        if (subWidget) {
-            ui->stackedWidget->removeWidget(subWidget);
-            subWidget->deleteLater();
-            subWidget = nullptr; // 서브 위젯 포인터를 nullptr로 설정
-        }
+    connect(ui->back_pushButton, &QPushButton::clicked, this, [=](){
+        mediaPlayer->stop();    // mediaPlayer 정지
+        // mediaPlayer 삭제
+        mediaPlayer->deleteLater();
+        // videoWidget 삭제
+        ui->layout->removeWidget(videoWidget);
+        videoWidget->deleteLater();
+        videoWidget = nullptr;
+        // 초기 화면으로 이동
+        ui->stackedWidget->setCurrentIndex(0);
     });
-    connect(rewindButton, &QPushButton::clicked, this, [this]() {
-        mediaPlayer->setPosition(std::max(0, (int)mediaPlayer->position() - 5000));
+    connect(ui->play_pushButton, &QPushButton::clicked, mediaPlayer, &QMediaPlayer::play);
+    connect(ui->pause_pushButton, &QPushButton::clicked, mediaPlayer, &QMediaPlayer::pause);
+    connect(ui->stop_pushButton, &QPushButton::clicked, mediaPlayer, &QMediaPlayer::stop);
+    connect(ui->rewind_pushButton, &QPushButton::clicked, this, [this](){
+        mediaPlayer->setPosition(std::max<qint64>(0, mediaPlayer->position() - 5000));
     });
-    connect(forwardButton, &QPushButton::clicked, this, [this]() {
-        mediaPlayer->setPosition(std::min(mediaPlayer->duration(), mediaPlayer->position() + 5000));
+    connect(ui->forward_pushButton, &QPushButton::clicked, this, [this](){
+        mediaPlayer->setPosition(mediaPlayer->position() + 5000);
     });
 
-    // 버튼을 레이아웃에 추가
-    controlLayout->addWidget(playButton);
-    controlLayout->addWidget(pauseButton);
-    controlLayout->addWidget(stopButton);
-    controlLayout->addWidget(rewindButton);
-    controlLayout->addWidget(forwardButton);
 
-    // 컨트롤 레이아웃을 메인 레이아웃에 추가
-    mainLayout->addLayout(controlLayout);
-
-    // subWidget을 스택 위젯에 추가하고 표시
-    ui->stackedWidget->addWidget(subWidget);
-    ui->stackedWidget->setCurrentWidget(subWidget);
 
     // 비디오 재생 시작
     mediaPlayer->play();
@@ -206,14 +187,14 @@ void MainWidget::makePage1() {
         }
     }
     page1->setLayout(gridLayout);
-    ui->stackedWidget->addWidget(page1);
+    ui->stackedWidget_2->addWidget(page1);
 }
 
 void MainWidget::makePage2() {
     /* 집중하고 싶은 화면을 보여주는 페이지2 */
     page2 = new QWidget();
     page2->setLayout(new QHBoxLayout());
-    ui->stackedWidget->addWidget(page2);
+    ui->stackedWidget_2->addWidget(page2);
 }
 
 MainWidget::~MainWidget()
