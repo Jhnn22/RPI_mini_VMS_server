@@ -49,6 +49,8 @@ SavedVideoList::SavedVideoList(QWidget *parent)
             QString fullPath = TOP_DIR + "/" + dirName + "/" + fileName;
             qDebug() << "재생 파일 경로: " << fullPath;
             emit play(fullPath);
+            close();
+            deleteLater();
         }
     });
 

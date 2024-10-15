@@ -131,10 +131,9 @@ MainWidget::MainWidget(QWidget *parent)
     timer->start(10000);
     // 불러오기 버튼
     connect(ui->load_pushButton, &QPushButton::clicked, this, [=](){
-
         savedVideoList->exec();
-        savedVideoList->deleteLater();
     });
+    // 재생 버튼 클릭시 영상 재생
     connect(savedVideoList, &SavedVideoList::play, this, &MainWidget::playSavedVideo);
 
 }
