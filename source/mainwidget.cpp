@@ -3,7 +3,7 @@
 #include "displaywidget.h"
 #include "devicemanager.h"
 #include "deviceregisterdialog.h"
-#include "savedvideolist.h"
+#include "videolistdialog.h"
 
 #include <string>
 
@@ -26,7 +26,7 @@ MainWidget::MainWidget(QWidget *parent)
     ui->stackedWidget_2->setCurrentIndex(0);
 
     initDeviceList();
-    savedVideoList = new SavedVideoList(this);
+    videoListDialog = new VideoListDialog(this);
 
     // 확대 버튼
     connect(ui->zoom_in_pushButton, &QPushButton::clicked, this, [&](){
@@ -131,10 +131,13 @@ MainWidget::MainWidget(QWidget *parent)
     timer->start(10000);
     // 불러오기 버튼
     connect(ui->load_pushButton, &QPushButton::clicked, this, [=](){
-        savedVideoList->exec();
+        videoListDialog->exec();
     });
-    // 재생 버튼 클릭시 영상 재생
-    connect(savedVideoList, &SavedVideoList::play, this, &MainWidget::playSavedVideo);
+    // 재생 버튼 클릭 시 영상 재생 및 다이얼로그 종료
+    connect(videoListDialog, &VideoListDialog::play, this, [=](QString fullPath){
+        playSavedVideo(fullPath);
+        videoListDialog->accept();
+    });
 
 }
 
@@ -172,8 +175,6 @@ void MainWidget::playSavedVideo(QString fullPath){
     connect(ui->forward_pushButton, &QPushButton::clicked, this, [this](){
         mediaPlayer->setPosition(mediaPlayer->position() + 5000);
     });
-
-
 
     // 비디오 재생 시작
     mediaPlayer->play();
@@ -214,24 +215,6 @@ void MainWidget::makePage2() {
 
 void MainWidget::initDeviceList() {
     deviceManager = new DeviceManager();
-    // deviceManager->load();
-    // -----------------------test --------------
-    Device* d1 = new Device(tr("192.168.0.118"));
-    Device* d2 = new Device(tr("192.168.0.2"));
-    Device* d3 = new Device(tr("192.168.0.3"));
-    d1->setName("우근");
-    d2->setName("test2");
-    d3->setName("test3");
-    deviceManager->addDevice(d1);
-    deviceManager->addDevice(d2);
-    deviceManager->addDevice(d3);
-    for (int i = 0; i < 10; i++) {
-        Device* d = new Device(tr("222.222.222.222"));
-        d->setName(QString::fromStdString(std::to_string(i)));
-        deviceManager->addDevice(d);
-    }
-    //------------------------------------------
-
     QList<QString> names = this->deviceManager->getAllName();
     QList<int> status = this->deviceManager->getAllStatus();
     for (int i = 0; i < names.size(); i++) {

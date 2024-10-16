@@ -1,11 +1,11 @@
-#include "savedvideolist.h"
-#include "ui_savedvideolist.h"
+#include "videolistdialog.h"
+#include "ui_videolistdialog.h"
 #define TOP_DIR QString("../../saved_video")
 #include <QDir>
 
-SavedVideoList::SavedVideoList(QWidget *parent)
+VideoListDialog::VideoListDialog(QWidget *parent)
     : QDialog(parent)
-    , ui(new Ui::SavedVideoList)
+    , ui(new Ui::VideoListDialog)
 {
     ui->setupUi(this);
 
@@ -21,24 +21,14 @@ SavedVideoList::SavedVideoList(QWidget *parent)
     connect(ui->listWidget, &QListWidget::itemClicked, this, [=](QListWidgetItem *item) {
         if (item && ui->back_pushButton->isEnabled() == false && ui->play_pushButton->isEnabled() == false) { // 디렉토리, 파일 구분
             dirName = item->text();
-            QStringList files = getSavedFiles(dirName);
-            ui->listWidget->clear();            // 목록을 지우고
-            ui->listWidget->addItems(files);    // 파일 목록 추가
-
-            // 파일 목록으로 전환되었으므로 버튼 활성화
-            ui->back_pushButton->setEnabled(true);
-            ui->play_pushButton->setEnabled(true);
+            QStringList fileNames = getSavedFiles(dirName);
+            listManage(fileNames, true);
         }
     });
 
     // "뒤로가기" 버튼 클릭 시 다시 디렉토리 목록을 보여줌
     connect(ui->back_pushButton, &QPushButton::clicked, this, [=]() {
-        ui->listWidget->clear();
-        ui->listWidget->addItems(dirNames);  // 다시 디렉토리 목록으로 복구
-
-        // 다시 디렉토리 목록으로 돌아왔으므로 버튼 비활성화
-        ui->back_pushButton->setEnabled(false);
-        ui->play_pushButton->setEnabled(false);
+        listManage(dirNames, false);
     });
 
     // "재생" 버튼 클릭 시 파일을 재생
@@ -48,25 +38,32 @@ SavedVideoList::SavedVideoList(QWidget *parent)
             fileName = item->text();
             QString fullPath = TOP_DIR + "/" + dirName + "/" + fileName;
             qDebug() << "재생 파일 경로: " << fullPath;
-            emit play(fullPath);
-            close();
-            deleteLater();
+            emit play(fullPath);    //파일 재생 시그널 전송
+            listManage(dirNames, false);
         }
     });
 
 }
 
-SavedVideoList::~SavedVideoList()
+VideoListDialog::~VideoListDialog()
 {
     delete ui;
 }
 
-QStringList SavedVideoList::getSavedDirs(){
+QStringList VideoListDialog::getSavedDirs(){
     QDir dir(TOP_DIR);
     return dir.entryList(QDir::Dirs | QDir::NoDotAndDotDot);
 }
 
-QStringList SavedVideoList::getSavedFiles(const QString &dirName){
+QStringList VideoListDialog::getSavedFiles(const QString &dirName){
     QDir dir(TOP_DIR + "/" + dirName);
     return dir.entryList(QDir::Files);
+}
+
+void VideoListDialog::listManage(const QStringList &names, bool flag){
+    ui->listWidget->clear();
+    ui->listWidget->addItems(names);
+
+    ui->back_pushButton->setEnabled(flag);
+    ui->play_pushButton->setEnabled(flag);
 }

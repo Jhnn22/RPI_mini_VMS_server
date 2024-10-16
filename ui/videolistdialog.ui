@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>SavedVideoList</class>
- <widget class="QDialog" name="SavedVideoList">
+ <class>VideoListDialog</class>
+ <widget class="QDialog" name="VideoListDialog">
   <property name="geometry">
    <rect>
     <x>0</x>

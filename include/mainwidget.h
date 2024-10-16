@@ -8,7 +8,7 @@
 class DisplayWidget;
 class DeviceManager;
 class QListWidgetItem;
-class SavedVideoList;
+class VideoListDialog;
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -40,7 +40,7 @@ private:
     void initDeviceList();
     void paintItem(QListWidgetItem* item, int status);
 
-    SavedVideoList *savedVideoList;
+    VideoListDialog *videoListDialog;
 
     QMediaPlayer *mediaPlayer;
     QVideoWidget *videoWidget;

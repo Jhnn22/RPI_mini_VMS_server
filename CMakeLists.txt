@@ -44,7 +44,7 @@ set(PROJECT_HEADERS
         include/device.h
         include/devicemanager.h
         include/deviceregisterdialog.h
-        include/savedvideolist.h
+        include/videolistdialog.h
 )
 
 set(PROJECT_SOURCES
@@ -54,13 +54,13 @@ set(PROJECT_SOURCES
         source/device.cpp
         source/devicemanager.cpp
         source/deviceregisterdialog.cpp
-        source/savedvideolist.cpp
+        source/videolistdialog.cpp
 )
 
 set(PROJECT_UI
         ui/mainwidget.ui
         ui/deviceregisterdialog.ui
-        ui/savedvideolist.ui
+        ui/videolistdialog.ui
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
