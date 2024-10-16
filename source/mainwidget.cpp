@@ -28,13 +28,17 @@ MainWidget::MainWidget(QWidget *parent)
     initDeviceList();
     videoListDialog = new VideoListDialog(this);
 
+    focusedDisplay = NULL;
+
     // 확대 버튼
     connect(ui->zoom_in_pushButton, &QPushButton::clicked, this, [&](){
+        if (focusedDisplay == NULL) return;
         page2->layout()->addWidget(focusedDisplay);
         ui->stackedWidget_2->setCurrentIndex(1);
     });
     // 축소 버튼
     connect(ui->zoom_out_pushButton, &QPushButton::clicked, this, [&](){
+        if (focusedDisplay == NULL) return;
         QGridLayout* page1_layout = qobject_cast<QGridLayout*>(page1->layout());
         if (page1_layout) {
             page1_layout->addWidget(focusedDisplay, displays[focusedDisplay].first, displays[focusedDisplay].second);
@@ -43,6 +47,7 @@ MainWidget::MainWidget(QWidget *parent)
     });
     // 연결 버튼
     connect(ui->connectButton, &QPushButton::clicked, this, [=]() {
+        if (focusedDisplay == NULL) return;
         // TODO : url 체크
         QListWidgetItem* item = ui->listWidget->currentItem();
         if (!item) {
@@ -67,6 +72,7 @@ MainWidget::MainWidget(QWidget *parent)
     });
     // 연결 해제 버튼
     connect(ui->disconnectButton, &QPushButton::clicked, this, [=]() {
+        if (focusedDisplay == NULL) return;
         focusedDisplay->stopVideo();
     });
 
@@ -235,6 +241,24 @@ void MainWidget::makePage2() {
 
 void MainWidget::initDeviceList() {
     deviceManager = new DeviceManager();
+    // deviceManager->load();
+    // // -----------------------test --------------
+    Device* d1 = new Device(tr("192.168.0.118"));
+    // Device* d2 = new Device(tr("192.168.0.2"));
+    // Device* d3 = new Device(tr("192.168.0.3"));
+    d1->setName("U-keun");
+    // d2->setName("test2");
+    // d3->setName("test3");
+    deviceManager->addDevice(d1);
+    // deviceManager->addDevice(d2);
+    // deviceManager->addDevice(d3);
+    // for (int i = 0; i < 10; i++) {
+    //     Device* d = new Device(tr("222.222.222.222"));
+    //     d->setName(QString::fromStdString(std::to_string(i)));
+    //     deviceManager->addDevice(d);
+    // }
+    // //------------------------------------------
+
     QList<QString> names = this->deviceManager->getAllName();
     QList<int> status = this->deviceManager->getAllStatus();
     for (int i = 0; i < names.size(); i++) {

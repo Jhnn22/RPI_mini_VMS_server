@@ -2,6 +2,9 @@
 #define DEVICE_H
 
 #include <QString>
+#include <QObject>
+#include <QFuture>
+#include <QtConcurrent>
 
 #define DISCONNECTED    -1
 #define CAMERA_ON       1
@@ -10,14 +13,9 @@
 
 class QJsonDocument;
 
-class Device
+class Device : public QObject
 {
-    QString name;
-    QString address;
-    QString rtspPort;
-    QString mount;
-    int status;
-
+    Q_OBJECT
 public:
     Device();
     Device(QString address);
@@ -32,8 +30,25 @@ public:
     QString getRtspPort();
     QString getMount();
     QJsonDocument stringToJsonDoc(std::string& content);
-    // 테스트용
     void setName(QString name);
+
+    void startPeriodicUpdate(int interval = 3000);
+    void stopPeriodicUpdate();
+
+signals:
+    void statusChanged(int status);
+
+private:
+    QString name;
+    QString address;
+    QString rtspPort;
+    QString mount;
+    int status;
+
+    QFuture<void> updateFuture;
+    bool isUpdateRunning;
+
+    void periodicUpdate(int interval);
 };
 
 #endif // DEVICE_H

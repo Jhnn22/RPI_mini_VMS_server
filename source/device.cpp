@@ -2,6 +2,7 @@
 #include "httplib.h"
 #include <QDebug>
 #include <QJsonDocument>
+#include <QJsonObject>
 using namespace std;
 
 Device::Device() {
@@ -46,13 +47,11 @@ void Device::registerDevice() {
     }
 }
 
-int  Device::getStatus() {
-    return this->status;
-}
-
 void Device::updateStatus() {
+    int prevStatus = this->status;
+
     httplib::Client client(address.toStdString(), HOST_PORT);
-    client.set_connection_timeout(0, 10000);
+    client.set_connection_timeout(0, 100000);
     httplib::Result result = client.Get("/cam-status");
     if (result)  {
         if (result->status == httplib::StatusCode::OK_200) {
@@ -69,6 +68,10 @@ void Device::updateStatus() {
         auto error = result.error();
         qDebug() << "HTTP error:" << httplib::to_string(error);
         this->status = DISCONNECTED;
+    }
+
+    if (prevStatus != this->status) {
+        emit statusChanged(this->status);
     }
 }
 
@@ -118,6 +121,10 @@ void Device::turnOff() {
     }
 }
 
+int  Device::getStatus() {
+    return this->status;
+}
+
 void Device::setAddress(QString address) {
     this->address = address;
 }
@@ -140,7 +147,27 @@ QString Device::getMount() {
 QJsonDocument Device::stringToJsonDoc(std::string& content) {
     return QJsonDocument::fromJson(QString::fromStdString(content).toUtf8());
 }
-// test 용
 void Device::setName(QString name) {
     this->name = name;
+}
+void Device::startPeriodicUpdate(int interval) {
+    if (!isUpdateRunning) {
+        isUpdateRunning = true;
+        updateFuture = QtConcurrent::run([this, interval]() {
+            this->periodicUpdate(interval);
+        });
+    }
+}
+
+void Device::stopPeriodicUpdate() {
+    isUpdateRunning = false;
+    updateFuture.waitForFinished();
+}
+
+// private
+void Device::periodicUpdate(int interval) {
+    while (isUpdateRunning) {
+        updateStatus();
+        QThread::msleep(interval);
+    }
 }

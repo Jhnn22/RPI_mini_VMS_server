@@ -2,11 +2,13 @@
 #define DEVICEMANAGER_H
 
 #include <QList>
+#include <QObject>
 
 #include "device.h"
 
-class DeviceManager
+class DeviceManager : public QObject
 {
+    Q_OBJECT
 private:
     QList<Device*> devices;
 
@@ -24,6 +26,9 @@ public:
     QString getAddress(QString name);
     int getStatus(QString name);
     // TODO: 파일 입출력
+
+signals:
+    void deviceStatusChanged(QString name, int status);
 };
 
 #endif // DEVICEMANAGER_H
