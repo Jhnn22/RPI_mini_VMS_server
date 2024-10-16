@@ -16,6 +16,10 @@ public:
     void playVideo(QString rtspURI);
     void stopVideo();
 
+public slots:
+    void startRecording();
+    void endRecording();
+
 signals:
     void focusChanged(DisplayWidget* widget, bool hasFocus);
 
@@ -30,8 +34,9 @@ private:
     bool m_hasFocus;
     GstThread* thread;
     QLabel* window;
-
     void initWindow();
+
+    // MainWidget *mainWidget;
 };
 
 #endif // DISPLAYWIDGET_H

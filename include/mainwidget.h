@@ -24,6 +24,10 @@ public:
     MainWidget(QWidget *parent = nullptr);
     ~MainWidget();
 
+signals:
+    void start();
+    void end();
+
 private:
     Ui::MainWidget *ui;
     QList<QString> ips;
@@ -45,5 +49,7 @@ private:
     QMediaPlayer *mediaPlayer;
     QVideoWidget *videoWidget;
     void playSavedVideo(QString fullPath);
+
+    bool recorded;
 };
 #endif // MAINWIDGET_H

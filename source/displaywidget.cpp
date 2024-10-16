@@ -23,6 +23,19 @@ void DisplayWidget::stopVideo() {
     }
 }
 
+void DisplayWidget::startRecording(){
+    if(thread){
+        thread->startRecording();
+    }
+}
+
+void DisplayWidget::endRecording(){
+    if(thread){
+        thread->endRecording();
+    }
+}
+
+
 void DisplayWidget::initWindow() {
     QVBoxLayout* layout = new QVBoxLayout(this);
     layout->setContentsMargins(2, 2, 2, 2);

@@ -39,6 +39,7 @@ void Device::registerDevice() {
             this->rtspPort = res["port"].toString();
             updateStatus();
         }
+
     } else {
         auto error = result.error();
         qDebug() << "HTTP error:" << httplib::to_string(error);

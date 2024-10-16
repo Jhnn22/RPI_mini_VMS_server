@@ -129,8 +129,26 @@ MainWidget::MainWidget(QWidget *parent)
         }
     });
     timer->start(10000);
+
+    //녹화 버튼
+    recorded = false;
+    connect(ui->record_pushButton, &QPushButton::clicked, this, [this](){
+        if(!recorded){
+            emit start();
+            recorded = true;
+            ui->record_pushButton->setText("녹화 종료");
+
+        }
+        else{
+            emit end();
+            recorded = false;
+            ui->record_pushButton->setText("녹화");
+        }
+    });
+
     // 불러오기 버튼
     connect(ui->load_pushButton, &QPushButton::clicked, this, [=](){
+        videoListDialog->update();
         videoListDialog->exec();
     });
     // 재생 버튼 클릭 시 영상 재생 및 다이얼로그 종료
@@ -200,6 +218,8 @@ void MainWidget::makePage1() {
             });
             display->setContentsMargins(2,2,2,2);
             gridLayout->addWidget(display, i, j);
+            connect(this, &MainWidget::start, display, &DisplayWidget::startRecording);
+            connect(this, &MainWidget::end, display, &DisplayWidget::endRecording);
         }
     }
     page1->setLayout(gridLayout);
