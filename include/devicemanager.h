@@ -18,7 +18,6 @@ public:
 
     void addDevice(Device* device);
     void removeDevice(QString name);
-    void updateAll();
     void turnOnCamera(QString name);
     void turnOffCamera(QString name);
     QList<QString> getAllName();
