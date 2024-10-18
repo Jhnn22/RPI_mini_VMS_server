@@ -14,6 +14,9 @@ int DeviceManager::findByName(QString name) {
 }
 
 void DeviceManager::addDevice(Device* device) {
+    connect(device, &Device::statusChanged, this, [=](int status) {
+        emit deviceStatusChanged(device->getName(), status);
+    });
     this->devices.append(device);
     qDebug() << "Device Added";
 }
