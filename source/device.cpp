@@ -48,8 +48,6 @@ void Device::registerDevice() {
 }
 
 void Device::updateStatus() {
-    int prevStatus = this->status;
-
     httplib::Client client(address.toStdString(), HOST_PORT);
     client.set_connection_timeout(0, 100000);
     httplib::Result result = client.Get("/cam-status");
@@ -58,20 +56,16 @@ void Device::updateStatus() {
             qDebug() << result->body;
             QJsonDocument res = stringToJsonDoc(result->body);
             if (res["message"] == "running") {
-                this->status = CAMERA_ON;
+                updateStatus(CAMERA_ON);
             }
             else if (res["message"] == "stopped") {
-                this->status = CAMERA_OFF;
+                updateStatus(CAMERA_OFF);
             }
         }
     } else {
         auto error = result.error();
         qDebug() << "HTTP error:" << httplib::to_string(error);
         this->status = DISCONNECTED;
-    }
-
-    if (prevStatus != this->status) {
-        emit statusChanged(this->status);
     }
 }
 
@@ -89,7 +83,7 @@ void Device::turnOn() {
                 return;
             }
             else if (res["message"] == "success") {
-                this->status = CAMERA_ON;
+                updateStatus(CAMERA_ON);
             }
         }
     } else {
@@ -112,7 +106,7 @@ void Device::turnOff() {
                 return;
             }
             else if (res["message"] == "success") {
-                this->status = CAMERA_OFF;
+                updateStatus(CAMERA_OFF);
             }
         }
     } else {
@@ -169,5 +163,12 @@ void Device::periodicUpdate(int interval) {
     while (isUpdateRunning) {
         updateStatus();
         QThread::msleep(interval);
+    }
+}
+
+void Device::updateStatus(int status) {
+    if (this->status != status) {
+        this->status = status;
+        emit statusChanged(this->status);
     }
 }
