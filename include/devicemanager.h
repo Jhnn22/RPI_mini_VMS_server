@@ -15,6 +15,7 @@ private:
     int findByName(QString name);
 public:
     DeviceManager();
+    ~DeviceManager();
 
     void addDevice(Device* device);
     void removeDevice(QString name);
