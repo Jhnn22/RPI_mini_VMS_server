@@ -8,6 +8,48 @@
 using namespace std;
 using namespace cv;
 
+// caps와 채널 수를 출력하는 헬퍼 함수
+static void print_caps_and_format(const gchar* prefix, GstCaps* caps) {
+    if (!caps) {
+        qDebug() << prefix << "Caps: None";
+        return;
+    }
+
+    gchar* caps_str = gst_caps_to_string(caps);
+    qDebug() << prefix << "Caps:" << caps_str;
+
+    // caps의 구조체를 가져와서 format 정보 분석
+    GstStructure* str = gst_caps_get_structure(caps, 0);
+    if (str) {
+        const gchar* format = gst_structure_get_string(str, "format");
+        if (format) {
+            qDebug() << prefix << "Format:" << format;
+            // 일반적인 video format의 채널 수 출력
+            if (g_str_equal(format, "GRAY8")) {
+                qDebug() << prefix << "Channels: 1 (Grayscale)";
+            } else if (g_str_equal(format, "YUY2") || g_str_equal(format, "UYVY")) {
+                qDebug() << prefix << "Channels: 2 (YUV packed)";
+            } else if (g_str_equal(format, "RGB") || g_str_equal(format, "BGR")) {
+                qDebug() << prefix << "Channels: 3 (RGB/BGR)";
+            } else if (g_str_equal(format, "RGBA") || g_str_equal(format, "BGRA")) {
+                qDebug() << prefix << "Channels: 4 (RGBA/BGRA)";
+            } else if (g_str_equal(format, "I420") || g_str_equal(format, "YV12")) {
+                qDebug() << prefix << "Channels: 1.5 (YUV planar)";
+            } else {
+                qDebug() << prefix << "Format channels unknown for:" << format;
+            }
+        }
+
+        // 추가적인 video 정보 출력
+        gint width, height;
+        if (gst_structure_get_int(str, "width", &width) &&
+            gst_structure_get_int(str, "height", &height)) {
+            qDebug() << prefix << "Resolution:" << width << "x" << height;
+        }
+    }
+    g_free(caps_str);
+}
+
 static void pad_added_handler(GstElement *src, GstPad *new_pad, GstElement *depay) {
     GstPad *sink_pad = gst_element_get_static_pad(depay, "sink");
     if (gst_pad_is_linked(sink_pad)) {
@@ -52,6 +94,7 @@ static GstFlowReturn new_sample (GstElement *sink, GstThread::CustomData *data) 
     GstSample *sample;
     GstBuffer *buffer;
     GstMapInfo map;
+
     g_signal_emit_by_name (sink, "pull-sample", &sample);
     if (sample) {
         buffer = gst_sample_get_buffer(sample);
@@ -79,12 +122,16 @@ static GstFlowReturn new_sample (GstElement *sink, GstThread::CustomData *data) 
         // GstBuffer를 읽기 위해 맵핑
         if (gst_buffer_map(buffer, &map, GST_MAP_READ)) {
             // GStreamer 데이터를 OpenCV cv::Mat로 변환
-            data->before = Mat(Size(WIDTH, HEIGHT), CV_8UC1, map.data);
-            if (data->before.size() != Size(WIDTH, HEIGHT)) {
+            // qDebug() << "Buffer size:" << map.size / (WIDTH * HEIGHT);  // 디버깅을 위해 채널 수 출력
+            // data->before = Mat(Size(WIDTH, HEIGHT), CV_8UC1, map.data);
+            data->before = Mat(HEIGHT * 3 / 2, WIDTH, CV_8UC1, map.data);
+            if (data->before.size() != Size(WIDTH, HEIGHT + HEIGHT/2)) {
                 g_printerr("Input image size does not match expected size.\n");
                 return GST_FLOW_ERROR;
             }
-            cvtColor(data->before, data->after, COLOR_GRAY2BGR);
+
+            data->after = Mat(HEIGHT, WIDTH, CV_8UC3);
+            cvtColor(data->before, data->after, COLOR_YUV2BGR_I420);
             if (data->after.empty()) {
                 g_printerr("Converted image is empty.\n");
                 return GST_FLOW_ERROR;
