@@ -4,6 +4,12 @@
 
 DeviceManager::DeviceManager() {}
 
+DeviceManager::~DeviceManager() {
+    for (auto device : devices) {
+        delete device;
+    }
+}
+
 int DeviceManager::findByName(QString name) {
     for (int i = 0; i < devices.size(); i++) {
         if (devices[i]->getName() == name) {

@@ -3,6 +3,7 @@
 #include <QDebug>
 #include <QJsonDocument>
 #include <QJsonObject>
+
 using namespace std;
 
 Device::Device() {
@@ -11,6 +12,7 @@ Device::Device() {
     this->status = DISCONNECTED;
     this->mount = "";
     this->rtspPort = "";
+    this->isUpdateRunning = false;
 }
 
 Device::Device(QString address) {
@@ -19,6 +21,11 @@ Device::Device(QString address) {
     this->status = DISCONNECTED;
     this->mount = "";
     this->rtspPort = "";
+    this->isUpdateRunning = false;
+}
+
+Device::~Device() {
+    stopPeriodicUpdate();
 }
 
 void Device::registerDevice() {
@@ -65,7 +72,7 @@ void Device::updateStatus() {
     } else {
         auto error = result.error();
         qDebug() << "HTTP error:" << httplib::to_string(error);
-        this->status = DISCONNECTED;
+        updateStatus(DISCONNECTED);
     }
 }
 
@@ -172,3 +179,4 @@ void Device::updateStatus(int status) {
         emit statusChanged(this->status);
     }
 }
+

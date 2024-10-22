@@ -25,7 +25,7 @@ include_directories(${GSTREAMER_INCLUDE_DIRS})
 link_directories(${GSTREAMER_LIBRARY_DIRS})
 
 # OpenCV 설정
-set(OpenCV_DIR "C:/opencv/build/x64/v15/lib")
+set(OpenCV_DIR "C:/opencv/build/x64/v15/bin")
 find_package(OpenCV REQUIRED)
 include_directories(${OpenCV_INCLUDE_DIRS})
 

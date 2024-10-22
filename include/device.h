@@ -19,6 +19,7 @@ class Device : public QObject
 public:
     Device();
     Device(QString address);
+    ~Device();
     void registerDevice();
     int getStatus();
     void updateStatus();
