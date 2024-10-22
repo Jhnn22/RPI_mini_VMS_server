@@ -124,17 +124,19 @@ MainWidget::MainWidget(QWidget *parent)
             deviceManager->turnOffCamera(selectedItem->text());
         }
     });
-    // 주기적으로 장치 상태 업데이트
-    QTimer* timer = new QTimer(this);
-    connect(timer, &QTimer::timeout, this, [=]() {
-        deviceManager->updateAll();
-        QList<int> status = this->deviceManager->getAllStatus();
-        for (int i = 0; i < status.size(); i++) {
-            auto item = ui->listWidget->item(i);
-            paintItem(item, status[i]);
+
+    connect(deviceManager, &DeviceManager::deviceStatusChanged, this, [=](QString name, int status) {
+        QListWidgetItem* item = nullptr;
+        for (int i = 0; i < ui->listWidget->count(); i++) {
+            if (ui->listWidget->item(i)->text() == name) {
+                item = ui->listWidget->item(i);
+                break;
+            }
+        }
+        if (item) {
+            paintItem(item, status);
         }
     });
-    timer->start(10000);
 
     //녹화 버튼
     recorded = false;

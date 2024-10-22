@@ -17,6 +17,7 @@ void DeviceManager::addDevice(Device* device) {
     connect(device, &Device::statusChanged, this, [=](int status) {
         emit deviceStatusChanged(device->getName(), status);
     });
+    device->startPeriodicUpdate();
     this->devices.append(device);
     qDebug() << "Device Added";
 }
@@ -27,14 +28,9 @@ void DeviceManager::removeDevice(QString name) {
         qDebug() << "There's no device";
         return;
     }
+    this->devices[found]->stopPeriodicUpdate();
     this->devices.removeAt(found);
     qDebug() << "Device removed";
-}
-
-void DeviceManager::updateAll() {
-    for (auto device : this->devices) {
-        device->updateStatus();
-    }
 }
 
 void DeviceManager::turnOnCamera(QString name) {

@@ -45,6 +45,7 @@ private:
     QString mount;
     int status;
 
+    void updateStatus(int status);
     QFuture<void> updateFuture;
     bool isUpdateRunning;
 
